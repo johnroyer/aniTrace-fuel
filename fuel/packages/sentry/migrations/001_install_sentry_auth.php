@@ -39,8 +39,7 @@ class Install_Sentry_Auth {
 
 		\DBUtil::create_table(\Config::get('sentry.table.users_metadata'), array(
 			'user_id'    => array('constraint' => 11, 'type' => 'int'),
-			'first_name' => array('constraint' => 50, 'type' => 'varchar'),
-			'last_name'  => array('constraint' => 50, 'type' => 'varchar'),
+			'nickname'   => array('constraint' => 200,'type' => 'varchar'),
 		), array('user_id'), true, 'InnoDB');
 
 		\DBUtil::create_table(\Config::get('sentry.table.groups'), array(
