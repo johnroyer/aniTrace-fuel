@@ -14,10 +14,6 @@ class Controller_Home extends Controller
 		);
 		$view->set_global( $data );
 
-		$view->head = View::forge('header');
-		$view->navbar = View::forge('navbar');
-		$view->footer = View::forge('footer');
-
 		return $view;
 	}
 
