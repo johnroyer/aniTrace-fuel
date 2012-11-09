@@ -9,9 +9,12 @@
       <?php endif; ?>
 
       <title>aniTrace</title>
-      <link rel="stylesheet" href="<?php echo Uri::base(false); ?>assets/css/bootstrap.min.css" type="text/css" charset="utf-8">
-      <link rel="stylesheet" href="<?php echo Uri::base(false); ?>assets/css/font-awesome.css" type="text/css" charset="utf-8">
-      <link rel="stylesheet" href="<?php echo Uri::base(false); ?>assets/css/style.css" type="text/css" charset="utf-8">
+
+      <?php
+         echo Asset::css('bootstrap.min.css');
+         echo Asset::css('font-awesome.css');
+         echo Asset::css('style.css');
+      ?>
    </head>
    <body>
 

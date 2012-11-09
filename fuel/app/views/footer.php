@@ -4,14 +4,16 @@
    var site_url = '<?php echo Uri::base(true); ?>';
 </script>
 
-<script src="<?php echo Uri::base(false); ?>assets/js/jquery-1.8.0.min.js"></script>
-<script src="<?php echo Uri::base(false); ?>assets/js/jquery.validate.min.js"></script>
-<script src="<?php echo Uri::base(false); ?>assets/js/jquery.tmpl.min.js"></script>
-<script src="<?php echo Uri::base(false); ?>assets/js/bootstrap.min.js"></script>
+<?php
+   echo Asset::js('jquery-1.8.0.min.js');
+   echo Asset::js('jquery.validate.min.js');
+   echo Asset::js('jquery.tmpl.min.js');
+   echo Asset::js('bootstrap.min.js');
 
-<script src="<?php echo Uri::base(false); ?>assets/js/admin.js"></script>
-<script src="<?php echo Uri::base(false); ?>assets/js/user.form.js"></script>
-<script src="<?php echo Uri::base(false); ?>assets/js/ani.js"></script>
-<script src="<?php echo Uri::base(false); ?>assets/js/common.js"></script>
+   echo Asset::js('admin.js');
+   echo Asset::js('user.form.js');
+   echo Asset::js('ani.js');
+   echo Asset::js('common.js');
+?>
 </body>
 </html>
