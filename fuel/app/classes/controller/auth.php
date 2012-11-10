@@ -23,11 +23,11 @@ class Controller_Auth extends Controller
 	/**
 	 * Identify user data and let user login.
 	 **/
-	public function actiion_login()
+	public function action_login()
 	{
       $username = Input::post('username');
       $password = Input::post('password');
-      if( $username !== null )
+      if( $username !== '')
       {
       }
       else
