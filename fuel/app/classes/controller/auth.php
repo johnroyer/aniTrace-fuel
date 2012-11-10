@@ -33,7 +33,7 @@ class Controller_Auth extends Controller
             $valid = Sentry::login($username, $password, false);
             if( $valid )
             {
-               echo 'login ok';
+               Response::redirect( Uri::create('ani/') );
             }
             else
             {
