@@ -1,16 +1,14 @@
 <?php
-
 /**
- * This controller used to make user authenication.
- */
+ * Authenication. For user login, register, logout, etc.
+ **/
 class Controller_Auth extends Controller
 {
-   
-   /**
-    * Default page. Show login page and register form.
-    */
-   public function action_index()
-   {
+	/**
+	 * Default page. Show login and register form.
+	 **/
+	public function action_index()
+	{
 		$view = View::forge('user/home');
 		$data = array(
 			'header' => View::forge('header'),
@@ -18,7 +16,7 @@ class Controller_Auth extends Controller
 			'page_title' => 'aniTrace',
 			'loggedin' => false,
 		);
-		$view->set_global( $data );
+		$view->set_global($data);
 		return $view;
-   }
+	}
 }
