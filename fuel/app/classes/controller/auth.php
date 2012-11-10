@@ -19,4 +19,40 @@ class Controller_Auth extends Controller
 		$view->set_global($data);
 		return $view;
 	}
+
+	/**
+	 * Identify user data and let user login.
+	 **/
+	public function actiion_login()
+	{
+	}
+
+	/**
+	 * User registration. Make sure user data is not conflict with exist
+	 * data and add new user data into database.
+	 **/
+	public function action_register()
+	{
+	}
+
+	/**
+	 * Logout loggined user.
+	 **/
+	public function action_logout()
+	{
+	}
+
+	/**
+	 * Check if username is conflict.
+	 **/
+	public function action_check_username()
+	{
+	}
+
+	/**
+	 * Check if user's email is conflict.
+	 **/
+	public function action_check_email()
+	{
+	}
 }
