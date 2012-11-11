@@ -89,8 +89,11 @@ class Controller_Auth extends Controller
 	/**
 	 * Check if username is conflict.
 	 **/
-	public function action_check_username()
+	public function action_check_username($username = '')
 	{
+      if ($username !== '') {
+         echo json_encode( array('found' => Sentry::user_exists($username)) );
+      }
 	}
 
 	/**
