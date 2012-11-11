@@ -82,6 +82,8 @@ class Controller_Auth extends Controller
 	 **/
 	public function action_logout()
 	{
+      Sentry::logout();
+      Response::redirect( Uri::base() );
 	}
 
 	/**
