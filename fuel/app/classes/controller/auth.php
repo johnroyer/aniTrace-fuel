@@ -93,14 +93,24 @@ class Controller_Auth extends Controller
 				{
 					$uid = Sentry::user()->create($data);
 					if($uid) {
-						echo 'user created';
+						$data['page_title'] = '註冊';
+						$data['loggedin'] = false;
+						$data['alert'] = array(
+							'type' => 'success',
+							'title' => '歡迎',
+							'text' => '註冊成功，祝您使用愉快！',
+							'return' => Uri::create('animate/')
+						);
+						$view = View::forge('alert');
+						$view->set_global($data);
+						return $view;
 					}
 					else
 					{
 						$data['page_title'] = '註冊';
 						$data['loggedin'] = false;
 						$data['alert'] = array(
-							'type' => '',
+							'type' => 'warning',
 							'title' => '註冊失敗',
 							'text' => '請檢查您輸入的帳號、密碼，再重試一次。',
 							'return' => Uri::create('auth/')
@@ -115,7 +125,7 @@ class Controller_Auth extends Controller
 					$data['page_title'] = '註冊';
 					$data['loggedin'] = false;
 					$data['alert'] = array(
-						'type' => '',
+						'type' => 'warning',
 						'title' => '註冊失敗',
 						'text' => $e->getMessage(),
 						'return' => Uri::create('auth/')
@@ -130,7 +140,7 @@ class Controller_Auth extends Controller
 				$data['page_title'] = '註冊';
 				$data['loggedin'] = false;
 				$data['alert'] = array(
-					'type' => '',
+					'type' => 'warning',
 					'title' => '註冊失敗',
 					'text' => '請檢查帳號與電子郵件格式，再重試一次。',
 					'return' => Uri::create('auth/')
