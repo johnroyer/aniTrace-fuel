@@ -97,22 +97,60 @@ class Controller_Auth extends Controller
 					}
 					else
 					{
-						echo 'create failed';
+						$data['page_title'] = '註冊';
+						$data['loggedin'] = false;
+						$data['alert'] = array(
+							'type' => '',
+							'title' => '註冊失敗',
+							'text' => '請檢查您輸入的帳號、密碼，再重試一次。',
+							'return' => Uri::create('auth/')
+						);
+						$view = View::forge('alert');
+						$view->set_global($data);
+						return $view;
 					}
 				}
 				catch( SentryUserException $e )
 				{
-					echo $e->getMessage();
+					$data['page_title'] = '註冊';
+					$data['loggedin'] = false;
+					$data['alert'] = array(
+						'type' => '',
+						'title' => '註冊失敗',
+						'text' => $e->getMessage(),
+						'return' => Uri::create('auth/')
+					);
+					$view = View::forge('alert');
+					$view->set_global($data);
+					return $view;
 				}
 			}
 			else
 			{
-				echo 'failed';
+				$data['page_title'] = '註冊';
+				$data['loggedin'] = false;
+				$data['alert'] = array(
+					'type' => '',
+					'title' => '註冊失敗',
+					'text' => '請檢查帳號與電子郵件格式，再重試一次。',
+					'return' => Uri::create('auth/')
+				);
+				$view = View::forge('alert');
+				$view->set_global($data);
+				return $view;
 			}
 		}
 		else
 		{
-			echo 'empty';
+			$view = View::forge('auth/home');
+			$data = array(
+				'header' => View::forge('header'),
+				'navbar' => View::forge('navbar'),
+				'page_title' => 'aniTrace',
+				'loggedin' => false,
+			);
+			$view->set_global($data);
+			return $view;
 		}
 	}
 
