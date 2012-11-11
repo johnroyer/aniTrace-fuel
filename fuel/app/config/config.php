@@ -244,6 +244,7 @@ return array(
 		 */
 		'classes'  => array(
          'view',
+			'crypt',
       ),
 
 		/**
