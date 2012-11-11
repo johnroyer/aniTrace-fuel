@@ -91,7 +91,8 @@ class Controller_Auth extends Controller
 	 **/
 	public function action_check_username($username = '')
 	{
-      if ($username !== '') {
+      if ($username !== '')
+      {
          echo json_encode( array('found' => Sentry::user_exists($username)) );
       }
 	}
@@ -99,7 +100,17 @@ class Controller_Auth extends Controller
 	/**
 	 * Check if user's email is conflict.
 	 **/
-	public function action_check_email()
+	public function action_check_email($email='')
 	{
+      $result = DB::select('email')->from('users')->where('email', $email)->execute();
+      if (count( $result->as_array() ) > 0)
+      {
+         $found = true;
+      }
+      else
+      {
+         $found = false;
+      }
+      echo json_encode( array('found'=> $found) );
 	}
 }
