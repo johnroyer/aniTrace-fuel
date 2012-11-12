@@ -20,6 +20,26 @@ class Controller_Anime extends Controller
 	 **/
 	public function action_index()
 	{
-		echo 'Anime index';
+		$view = View::forge('anime/list');
+		$data = array(
+			'page_title' => '動漫清單',
+			'loggedin' => true,
+			'user' => $this->getUserInfo(),
+		);
+		$view->set_global($data);
+		return $view;
+	}
+
+	/**
+	 * Return user information needed in views.
+	 **/
+	private function getUserInfo()
+	{
+		$user = Sentry::user();
+		$result = array(
+			'username' => $user->get('username'),
+			'isAdmin' => true,
+		);
+		return $result;
 	}
 }
