@@ -1,4 +1,5 @@
 <?php
+use \Model\Anime;
 /**
  * Methods for Ajax request in animtion page.
  **/
@@ -9,6 +10,6 @@ class Controller_Anime_Ajax extends Controller_Anime
 	 **/
 	public function action_index()
 	{
-		echo 'ajax';
+		return print_r(Anime::getList());
 	}
 }
