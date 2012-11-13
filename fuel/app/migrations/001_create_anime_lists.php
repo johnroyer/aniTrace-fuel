@@ -2,11 +2,11 @@
 
 namespace Fuel\Migrations;
 
-class Create_ani_lists
+class Create_anime_lists
 {
 	public function up()
 	{
-		\DBUtil::create_table('ani_lists', array(
+		\DBUtil::create_table('anime_lists', array(
 			'id' => array('constraint' => 11, 'type' => 'int', 'auto_increment' => true),
 			'id' => array('constraint' => 11, 'type' => 'int'),
 			'user_id' => array('constraint' => 11, 'type' => 'int'),
@@ -25,6 +25,6 @@ class Create_ani_lists
 
 	public function down()
 	{
-		\DBUtil::drop_table('ani_lists');
+		\DBUtil::drop_table('anime_lists');
 	}
 }
