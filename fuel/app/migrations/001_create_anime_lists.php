@@ -8,18 +8,14 @@ class Create_anime_lists
 	{
 		\DBUtil::create_table('anime_lists', array(
 			'id' => array('constraint' => 11, 'type' => 'int', 'auto_increment' => true),
-			'id' => array('constraint' => 11, 'type' => 'int'),
 			'user_id' => array('constraint' => 11, 'type' => 'int'),
 			'name' => array('constraint' => 200, 'type' => 'varchar'),
-			'sub' => array('constraint' => 100, 'type' => 'varchar'),
+			'sub' => array('constraint' => 100, 'type' => 'varchar', 'null' => true),
 			'volumn' => array('constraint' => 11, 'type' => 'int'),
 			'download' => array('constraint' => 11, 'type' => 'int'),
-			'link' => array('constraint' => 10240, 'type' => 'varchar'),
+			'link' => array('constraint' => 10240, 'type' => 'varchar', 'null' => true),
 			'finished' => array('constraint' => 1, 'type' => 'int'),
 			'public' => array('constraint' => 1, 'type' => 'int'),
-			'created_at' => array('constraint' => 11, 'type' => 'int'),
-			'updated_at' => array('constraint' => 11, 'type' => 'int'),
-
 		), array('id'));
 	}
 
