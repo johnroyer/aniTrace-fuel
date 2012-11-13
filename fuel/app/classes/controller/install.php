@@ -7,13 +7,7 @@ class Controller_Install extends Controller
 	{
 		if( Migrate::latest('sentry', 'package') && Migrate::latest('default', 'app'))
 		{
-			$data = array(
-				'username' => 'admin',
-				'email' => 'admin@admin',
-				'password' => 'admin',
-			);
-			$uid = Sentry::user()->create($data);
-			return 'user id = '.$uid;
+			return 'install complete';
 		}
 		else
 		{
