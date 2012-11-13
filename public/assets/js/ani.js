@@ -4,10 +4,6 @@
  *
  *****************************************************************************/
 
-$('document').ready(  function(){
-      getAniList();
-});
-
 function getAniList( ) {
    $.ajax( {
       url: site_url + '/ajax/',
@@ -21,6 +17,24 @@ function getAniList( ) {
          $('td.col-vol > div > i.icon-minus').click( function(){ volClicked('down', $(this) ); } );
          $('td.col-buy > div > i.icon-plus').click( function(){ buyClicked('up', $(this) ); } );
          $('td.col-buy > div > i.icon-minus').click( function(){ buyClicked('down', $(this) ); } );
+
+         // Bind event for finish button
+         $('i.icon-ok').click( function(){ markFinished( $(this) ); });
+      }
+   } );
+}
+
+function getWatchableList( ) {
+   $.ajax( {
+      url: site_url + '/ajax/watchableList/',
+      dataType: 'json',
+      error: function(){ console.log('Get animation list failed') },
+      success: function( response ){
+         renewList( response );
+
+         // Bind clicked event to icons
+         $('td.col-vol > div > i.icon-plus').click( function(){ volClicked('up', $(this) ); } );
+         $('td.col-vol > div > i.icon-minus').click( function(){ volClicked('down', $(this) ); } );
 
          // Bind event for finish button
          $('i.icon-ok').click( function(){ markFinished( $(this) ); });
@@ -162,18 +176,25 @@ $('#dialog-addAni').on('show', function(){
 $('#dialog-edit').on('show', function(){
       var $this = $(this);
       var aniId = $this.find('> form').attr('data-id');
-      var $targetRow = $('#ani-list > tbody > tr#' + aniId);
-      var name = $targetRow.find('.name').text();
-      var link = $targetRow.find('.link > a').attr('href');
-      var sub = $targetRow.find('> td.col-sub').text();
-      var vol = $targetRow.find('> td.col-vol > div.vol').text();
-      var buy = $targetRow.find('> td.col-buy > div.buy').text();
-      $this.find('#ani-name').val( name );
-      $this.find('#ani-link').val( link );
-      $this.find('#ani-sub').val( sub );
-      $this.find('#ani-vol').val( vol );
-      $this.find('#ani-buy').val( buy );
-      console.log( aniId );
+      var name, link, sub, vol, buy;
+      var data = {
+         path: 'anime/' + aniId,
+         errorMsg: 'vol access failed',
+         onSuccess: function( response ){
+            name = response[0].name;
+            link = response[0].link;
+            sub = response[0].sub;
+            vol = response[0].vol;
+            buy = response[0].buy;
+            $this.find('#ani-name').val( name );
+            $this.find('#ani-link').val( link );
+            $this.find('#ani-sub').val( sub );
+            $this.find('#ani-vol').val( vol );
+            $this.find('#ani-buy').val( buy );
+            console.log( aniId );
+         }
+      };
+      req( data );
 } );
 
 // Bind click event to submit button in dialog
@@ -241,3 +262,13 @@ $('#submit-animation-change').click( function(){
       console.log(data);
    } );
 });
+
+// Get anime list
+$('document').ready(  function(){
+      if( navbarHighlight == 'download-list' ){
+         getAniList();
+      }else{
+         getWatchableList();
+      }
+});
+
