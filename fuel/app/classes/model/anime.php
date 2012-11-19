@@ -50,4 +50,17 @@ class Anime extends \Model
 			return DB::query($sql)->execute()->as_array();
 		}
 	}
+
+	/**
+		* Get anime information.
+		* @param  int    anime ID
+		* @return array  properties of anime
+	 **/
+	public static function getAnime($id)
+	{
+		return DB::select()
+			->from('anime_lists')
+			->where('user_id', Sentry::user()->get('id'))
+			->execute()->as_array()[0];
+	}
 }
