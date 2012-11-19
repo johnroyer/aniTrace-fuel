@@ -1,6 +1,7 @@
 <?php
 namespace Model;
-use \DB;
+use DB;
+use Sentry;
 /**
  * Anime list access.
  **/
@@ -14,6 +15,15 @@ class Anime extends \Model
 	 **/
 	public static function getList($type='')
 	{
-		return DB::select()->from('anime_lists')->where('user_id', 1)->execute()->as_array();
+		if( $type == '' )
+		{
+			return DB::select()->from('anime_lists')->where('user_id', 1)->execute()->as_array();
+		}
+		elseif( $type == 'download' )
+		{
+		}
+		elseif( $type == 'watchable' )
+		{
+		}
 	}
 }
