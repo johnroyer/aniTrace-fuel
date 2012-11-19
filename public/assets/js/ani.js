@@ -265,10 +265,6 @@ $('#submit-animation-change').click( function(){
 
 // Get anime list
 $('document').ready(  function(){
-      if( navbarHighlight == 'download-list' ){
          getAniList();
-      }else{
-         getWatchableList();
-      }
 });
 
