@@ -17,10 +17,18 @@ class Anime extends \Model
 	{
 		if( $type == '' )
 		{
-			return DB::select()->from('anime_lists')->where('user_id', 1)->execute()->as_array();
+			return DB::select()
+				->from('anime_lists')
+				->where('user_id', Sentry::user()->get('id'))
+				->execute()->as_array();
 		}
 		elseif( $type == 'download' )
 		{
+			return DB::select()
+				->from('anime_lists')
+				->where('user_id', Sentry::user()->get('id'))
+				->and_where('finished', 0)
+				->execute()->as_array();
 		}
 		elseif( $type == 'watchable' )
 		{
