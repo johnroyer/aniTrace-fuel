@@ -33,6 +33,13 @@ class Anime extends \Model
 		}
 		elseif( $type == 'watchable' )
 		{
+			$sql  = 'select * from anime_lists
+							where user_id = ' . Sentry::user()->get('id') .'
+							and (
+								(`download` = 0 and `volumn` = 0)
+								or (`download` > `volumn` or `finished` = 0)
+							) ';
+			return DB::query($sql)->execute()->as_array();
 		}
 	}
 }
