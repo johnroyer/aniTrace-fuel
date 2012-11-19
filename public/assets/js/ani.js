@@ -6,7 +6,7 @@
 
 function getAniList( ) {
    $.ajax( {
-      url: site_url + '/ajax/',
+      url: site_url + 'anime/ajax/',
       dataType: 'json',
       error: function(){ console.log('Get animation list failed') },
       success: function( response ){
@@ -26,7 +26,7 @@ function getAniList( ) {
 
 function getWatchableList( ) {
    $.ajax( {
-      url: site_url + '/ajax/watchableList/',
+      url: site_url + 'anime/ajax/watchableList/',
       dataType: 'json',
       error: function(){ console.log('Get animation list failed') },
       success: function( response ){
@@ -69,7 +69,7 @@ function renewList( response ){
 
 function req( data ) {
    if( data !== undefined ){
-      var url = site_url + '/ajax/';
+      var url = site_url + 'anime/ajax/';
       $.ajax( {
          url:  url + data.path,
          dataType: 'json',
@@ -81,7 +81,7 @@ function req( data ) {
 
 function markFinished( $clicked ){
    var id = $clicked.parent().parent().attr('id');
-   $.get( site_url + '/ajax/finished/' + id ,
+   $.get( site_url + 'anime/ajax/finished/' + id ,
       function( response ){
          response = response[0];
          if( response.finished == 1 ){
@@ -200,7 +200,7 @@ $('#dialog-edit').on('show', function(){
 // Bind click event to submit button in dialog
 $('#submit-new-animation').click( function(){
       console.log('form submit');
-      $.post( site_url+'/ajax/add/', $('form.active').serializeArray() , 
+      $.post( site_url+'anime/ajax/add/', $('form.active').serializeArray() , 
          function( response ){ 
             // Add Animation into list
             var tmpl = $('#row-template').clone().removeAttr('id');
@@ -237,7 +237,7 @@ $('#submit-animation-change').click( function(){
    console.log('submiting changes');
    var data = $('form.active').serializeArray();
    data.push( {name:'id', value: $('form.active').attr('data-id') } );
-   $.post( site_url+'/ajax/mod/', data , function( response ){
+   $.post( site_url+'anime/ajax/mod/', data , function( response ){
       // Update view
       var id = response[0].sn;
       var $row = $('tr#' + id );

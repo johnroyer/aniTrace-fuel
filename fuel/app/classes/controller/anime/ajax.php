@@ -10,6 +10,6 @@ class Controller_Anime_Ajax extends Controller_Anime
 	 **/
 	public function action_index()
 	{
-		return print_r(Anime::getList());
+		return json_encode(Anime::getList('watchable'));
 	}
 }

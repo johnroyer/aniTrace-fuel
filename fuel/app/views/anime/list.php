@@ -25,14 +25,14 @@
             </td>
             <td class="col-sub">${sub}</td>
             <td class="col-vol unselectable">
-               <div class="vol">${vol}</div>
+               <div class="vol">${volumn}</div>
                <div class="vol-act">
                   <i class="icon-plus"></i>
                   <i class="icon-minus"></i>
                </div>
             </td>
             <td class="col-buy unselectable">
-               <div class="buy">${buy}</div>
+               <div class="buy">${download}</div>
                <div class="buy-act">
                   <i class="icon-plus"></i>
                   <i class="icon-minus"></i>
