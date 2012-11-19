@@ -2,6 +2,7 @@
 namespace Model;
 use DB;
 use Sentry;
+use Arr;
 
 /**
  * Anime list access.
@@ -56,11 +57,37 @@ class Anime extends \Model
 		* @param  int    anime ID
 		* @return array  properties of anime
 	 **/
-	public static function getAnime($id)
+	public static function getAnime($id = 0)
 	{
 		return DB::select()
 			->from('anime_lists')
 			->where('user_id', Sentry::user()->get('id'))
 			->execute()->as_array()[0];
+	}
+
+	/**
+		* Get anime volumn.
+		* @param  int anime ID
+		* @return int anime volumn
+	 **/
+	public static function getVolumn($id = 0)
+	{
+		return Anime::getAnime($id)['volumn'];
+	}
+
+	/**
+	 * 
+	 **/
+	public static function setAnime($data='')
+	{
+		$id = Arr::get($data, 'id', '');
+		if( Arr::is_assoc($data) && $id != '')
+		{
+			$result = DB::update('anime_lists')
+				->where('id', $id)
+				->where('user_id', Sentry::user()->get('id'))
+				->set( $data )
+				->execute();
+		}
 	}
 }
