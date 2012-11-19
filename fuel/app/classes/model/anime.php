@@ -2,6 +2,7 @@
 namespace Model;
 use DB;
 use Sentry;
+
 /**
  * Anime list access.
  **/
