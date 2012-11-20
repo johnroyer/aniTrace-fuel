@@ -76,6 +76,16 @@ class Anime extends \Model
 	}
 
 	/**
+		* Get anime download value.
+		* @param  int anime ID
+		* @return int anime download
+	 **/
+	public static function getDownload($id = 0)
+	{
+		return Anime::getAnime($id)['download'];
+	}
+
+	/**
 	 * 
 	 **/
 	public static function setAnime($data='')
@@ -129,6 +139,39 @@ class Anime extends \Model
 				->where('id', $id)
 				->where('user_id', Sentry::user()->get('id'))
 				->value('volumn', $vol)
+				->execute();
+		}
+	}
+
+	/**
+		* Add download value by one.
+		* @param  int anime ID
+	 **/
+	public static function downloadUp($id)
+	{
+		$download = Anime::getDownload($id);
+		$download++;
+			DB::update('anime_lists')
+				->where('id', $id)
+				->where('user_id', Sentry::user()->get('id'))
+				->value('download', $download)
+				->execute();
+	}
+
+	/**
+		* Subtract anime download by one until download equal 0.
+		* @param  int anime ID
+	 **/
+	public static function downloadDown($id)
+	{
+		$download = Anime::getDownload($id);
+		if( $download > 0 )
+		{
+			$download--;
+			DB::update('anime_lists')
+				->where('id', $id)
+				->where('user_id', Sentry::user()->get('id'))
+				->value('download', $download)
 				->execute();
 		}
 	}
