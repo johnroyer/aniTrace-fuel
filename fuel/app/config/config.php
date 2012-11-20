@@ -204,7 +204,7 @@ return array(
 	 * Paths MUST end with a directory separator (the DS constant)!
 	 */
 	'package_paths' => array(
-		//PKGPATH
+		PKGPATH
 	),
 
 
@@ -225,7 +225,8 @@ return array(
 		 * );
 		 */
 		'packages'  => array(
-			//'orm',
+			'orm',
+			'sentry',
 		),
 
 		/**
@@ -241,7 +242,10 @@ return array(
 		/**
 		 * Classes to autoload & initialize even when not used
 		 */
-		'classes'  => array(),
+		'classes'  => array(
+         'view',
+			'crypt',
+      ),
 
 		/**
 		 * Configs to autoload
