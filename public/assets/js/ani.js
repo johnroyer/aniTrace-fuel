@@ -6,7 +6,7 @@
 
 function getAniList( ) {
    $.ajax( {
-      url: site_url + 'anime/ajax/',
+      url: site_url + '/ajax/',
       dataType: 'json',
       error: function(){ console.log('Get animation list failed') },
       success: function( response ){
@@ -26,7 +26,7 @@ function getAniList( ) {
 
 function getWatchableList( ) {
    $.ajax( {
-      url: site_url + 'anime/ajax/watchableList/',
+      url: site_url + '/ajax/watchableList/',
       dataType: 'json',
       error: function(){ console.log('Get animation list failed') },
       success: function( response ){
@@ -35,6 +35,8 @@ function getWatchableList( ) {
          // Bind clicked event to icons
          $('td.col-vol > div > i.icon-plus').click( function(){ volClicked('up', $(this) ); } );
          $('td.col-vol > div > i.icon-minus').click( function(){ volClicked('down', $(this) ); } );
+         $('td.col-buy > div > i.icon-plus').click( function(){ buyClicked('up', $(this) ); } );
+         $('td.col-buy > div > i.icon-minus').click( function(){ buyClicked('down', $(this) ); } );
 
          // Bind event for finish button
          $('i.icon-ok').click( function(){ markFinished( $(this) ); });
@@ -69,7 +71,7 @@ function renewList( response ){
 
 function req( data ) {
    if( data !== undefined ){
-      var url = site_url + 'anime/ajax/';
+      var url = site_url + '/ajax/';
       $.ajax( {
          url:  url + data.path,
          dataType: 'json',
@@ -81,7 +83,7 @@ function req( data ) {
 
 function markFinished( $clicked ){
    var id = $clicked.parent().parent().attr('id');
-   $.get( site_url + 'anime/ajax/finished/' + id ,
+   $.get( site_url + '/ajax/finished/' + id ,
       function( response ){
          response = response[0];
          if( response.finished == 1 ){
@@ -200,7 +202,7 @@ $('#dialog-edit').on('show', function(){
 // Bind click event to submit button in dialog
 $('#submit-new-animation').click( function(){
       console.log('form submit');
-      $.post( site_url+'anime/ajax/add/', $('form.active').serializeArray() , 
+      $.post( site_url+'/ajax/add/', $('form.active').serializeArray() , 
          function( response ){ 
             // Add Animation into list
             var tmpl = $('#row-template').clone().removeAttr('id');
@@ -237,7 +239,7 @@ $('#submit-animation-change').click( function(){
    console.log('submiting changes');
    var data = $('form.active').serializeArray();
    data.push( {name:'id', value: $('form.active').attr('data-id') } );
-   $.post( site_url+'anime/ajax/mod/', data , function( response ){
+   $.post( site_url+'/ajax/mod/', data , function( response ){
       // Update view
       var id = response[0].sn;
       var $row = $('tr#' + id );
@@ -265,6 +267,10 @@ $('#submit-animation-change').click( function(){
 
 // Get anime list
 $('document').ready(  function(){
+      if( navbarHighlight == 'download-list' ){
          getAniList();
+      }else{
+         getWatchableList();
+      }
 });
 
