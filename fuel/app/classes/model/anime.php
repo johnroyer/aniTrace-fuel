@@ -90,4 +90,37 @@ class Anime extends \Model
 				->execute();
 		}
 	}
+
+	/**
+		* Add anime volumn by one.
+		* @param  int anime ID
+	 **/
+	public static function volumnUp($id)
+	{
+		$vol = Anime::getVolumn($id);
+		$vol++;
+		DB::update('anime_lists')
+			->where('id', $id)
+			->where('user_id', Sentry::user()->get('id'))
+			->value('volumn', $vol)
+			->execute();
+	}
+
+	/**
+		* Subtract anime volumn by one until volumn equal 0.
+		* @param  int anime ID
+	 **/
+	public static function volumnDown($id)
+	{
+		$vol = Anime::getVolumn($id);
+		if( $vol > 0 )
+		{
+			$vol--;
+			DB::update('anime_lists')
+				->where('id', $id)
+				->where('user_id', Sentry::user()->get('id'))
+				->value('volumn', $vol)
+				->execute();
+		}
+	}
 }
