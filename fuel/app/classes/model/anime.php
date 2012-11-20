@@ -59,11 +59,14 @@ class Anime extends \Model
 	 **/
 	public static function getAnime($id = 0)
 	{
-		return DB::select()
-			->from('anime_lists')
-			->where('user_id', Sentry::user()->get('id'))
-			->where('id', $id)
-			->execute()->as_array()[0];
+      if( $id != 0 )
+      {
+         return DB::select()
+            ->from('anime_lists')
+            ->where('user_id', Sentry::user()->get('id'))
+            ->where('id', $id)
+            ->execute()->as_array()[0];
+      }
 	}
 
 	/**
