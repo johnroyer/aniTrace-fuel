@@ -175,4 +175,20 @@ class Anime extends \Model
 				->execute();
 		}
 	}
+
+	/**
+		* Modify finish status between 0 and 1.
+		* 0 if not finished, 1 if finished.
+		* @param  int anime ID
+	 **/
+	public static function setFinished($id)
+	{
+		$finished = Anime::getAnime($id)['finished'];
+		$finished = ( $finished + 1 ) % 2;  // Swap between 0 and 1
+		DB::update('anime_lists')
+			->where('id', $id)
+			->where('user_id', Sentry::user()->get('id'))
+			->value('finished', $finished)
+			->execute();
+	}
 }
