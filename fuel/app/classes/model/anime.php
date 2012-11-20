@@ -83,6 +83,15 @@ class Anime extends \Model
 		$id = Arr::get($data, 'id', '');
 		if( Arr::is_assoc($data) && $id != '')
 		{
+			// Check value of volumn and download, Minumal value is 0.
+			if( $data['volumn'] < 0 )
+			{
+				$data['volumn'] = 0;
+			}
+			if( $data['download'] < 0 )
+			{
+				$data['download'] = 0;
+			}
 			$result = DB::update('anime_lists')
 				->where('id', $id)
 				->where('user_id', Sentry::user()->get('id'))
