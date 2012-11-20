@@ -191,4 +191,32 @@ class Anime extends \Model
 			->value('finished', $finished)
 			->execute();
 	}
+
+	/**
+		* Add a new anime.
+		* @param  array anime information, element 'name' is needed.
+		* @return array anime builded.
+	 **/
+	public static function addAnime($data)
+	{
+		if( Arr::is_assoc($data) )
+		{
+			// Check if element 'name' is exist
+			if( array_key_exists('name', $data) )
+			{
+				$data['user_id'] = Sentry::user()->get('id');
+				$data['sub'] = Arr::get($data, 'sub', '');
+				$data['volumn'] = Arr::get($data, 'volumn', '0');
+				$data['download'] = Arr::get($data, 'download', '0');
+				$data['link'] = Arr::get($data, 'link', '');
+				$data['finished'] = Arr::get($data, 'finished', '0');
+				$data['public'] = Arr::get($data, 'public', '0');
+
+				list($id, $affectedRow) = DB::insert('anime_lists')
+					->set($data)
+					->execute();
+				return Anime::getAnime($id);
+			}
+		}
+	}
 }
