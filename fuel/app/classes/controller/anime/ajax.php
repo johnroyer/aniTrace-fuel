@@ -82,4 +82,19 @@ class Controller_Anime_Ajax extends Controller_Anime
 			}
 		}
 	}
+
+	/**
+	 * Set if anime has finished.
+	 * @param  int   anime ID
+	 * @return jsosn anime information
+	 **/
+	public function action_finished($id=0)
+	{
+		$id = intval($id);
+		if( $id > 0 )
+		{
+			Anime::setFinished($id);
+			return json_encode(Anime::getAnime($id));
+		}
+	}
 }
