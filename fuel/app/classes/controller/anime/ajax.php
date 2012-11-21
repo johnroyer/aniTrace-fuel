@@ -58,4 +58,28 @@ class Controller_Anime_Ajax extends Controller_Anime
 			}
 		}
 	}
+
+	/**
+	 * Add or subtract anime download progress.
+	 * @param  string  'up' or 'down'
+	 * @param  int     anime ID
+	 * @return json    anime information after update
+	 **/
+	public function action_download($action, $id=0)
+	{
+		$id = intval($id);
+		if( $id > 0 )
+		{
+			if( $action == 'up' )
+			{
+				Anime::downloadUp($id);
+				echo json_encode(Anime::getAnime($id));
+			}
+			else
+			{
+				Anime::downloadDown($id);
+				echo json_encode(Anime::getAnime($id));
+			}
+		}
+	}
 }
