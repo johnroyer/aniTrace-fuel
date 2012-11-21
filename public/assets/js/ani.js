@@ -128,10 +128,10 @@ function buyClicked( act, $clicked ) {
          }
       };
       if( act === 'up' ){
-         data.path = 'buy/up/' + id;
+         data.path = 'download/up/' + id;
          req( data );
       }else{
-         data.path = 'buy/down/' + id;
+         data.path = 'download/down/' + id;
          req( data );
       }
    }
