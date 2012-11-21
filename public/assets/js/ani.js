@@ -83,12 +83,11 @@ function markFinished( $clicked ){
    var id = $clicked.parent().parent().attr('id');
    $.get( site_url + 'anime/ajax/finished/' + id ,
       function( response ){
-         response = response;
          if( response.finished == 1 ){
-            $('tr#' + response.sn).find('i.icon-ok').addClass('finished');
+            $('tr#' + response.id).find('i.icon-ok').addClass('finished');
             console.log('Marked as finished');
          }else{
-            $('tr#' + response.sn).find('i.icon-ok').removeClass('finished');
+            $('tr#' + response.id).find('i.icon-ok').removeClass('finished');
             console.log('Marked as unfinished');
          }
       }, 'json' )
@@ -204,13 +203,13 @@ $('#submit-new-animation').click( function(){
          function( response ){ 
             // Add Animation into list
             var tmpl = $('#row-template').clone().removeAttr('id');
-            $('<tr></tr>').attr('id', response.sn)
+            $('<tr></tr>').attr('id', response.id)
             .insertAfter('#ani-list > tbody > tr:last');
             var result = $.tmpl( tmpl, response )
             .appendTo('#ani-list > tbody > tr:last');
             $row = $('#ani-list > tbody > tr:last');
 
-            $row.find('td.col-act > .act-edit').attr('data-id', response.sn );
+            $row.find('td.col-act > .act-edit').attr('data-id', response.id );
 
             if( response.link != null && response.link != '' ){
                $row.find('.link > a').attr('href', response.link);
@@ -239,7 +238,7 @@ $('#submit-animation-change').click( function(){
    data.push( {name:'id', value: $('form.active').attr('data-id') } );
    $.post( site_url+'anime/ajax/mod/', data , function( response ){
       // Update view
-      var id = response.sn;
+      var id = response.id;
       var $row = $('tr#' + id );
       $row.find('.name').text( response.name );
       $row.find('.col-sub').text( response.sub );
