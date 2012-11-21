@@ -97,4 +97,29 @@ class Controller_Anime_Ajax extends Controller_Anime
 			return json_encode(Anime::getAnime($id));
 		}
 	}
+
+	/**
+	 * Add a new anime.
+	 * @return  json  anime information which has been inserted
+	 **/
+	public function action_add()
+	{
+		$validate = Validation::forge();
+		$validate->add_field('name', 'anime name', 'required');
+		$validate->add_field('link', 'external link', 'max_length[10240]');
+		if( $validate->run() )
+		{
+			$data = array(
+				'name' => Input::post('name'),
+				'sub' => Input::post('sub', ''),
+				'link' => Input::post('link', '')
+			);
+			$newAnime = Anime::addAnime($data);
+			echo json_encode($newAnime);
+		}
+		else
+		{
+			echo json_encode(array('stat'=>'input error'));
+		}
+	}
 }
