@@ -20,4 +20,17 @@ class Controller_Anime_Ajax extends Controller_Anime
 	{
 		return json_encode(Anime::getList('watchable'));
 	}
+
+	/**
+	 * Return anime information.
+	 * @param  int   anime ID
+	 * @return json  anime information
+	 **/
+	public function action_anime($id=0)
+	{
+		if( intval($id) > 0 )
+		{
+			echo json_encode(Anime::getAnime($id));
+		}
+	}
 }
