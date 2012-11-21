@@ -47,7 +47,7 @@ class Anime extends \Model
 				and (
 						(`download` = 0 and `volumn` = 0)
 						or (`download` > `volumn` or `finished` = 0)
-					 ) ';
+					 ) and download > 0 and download > volumn ';
 			return DB::query($sql)->execute()->as_array();
 		}
 	}

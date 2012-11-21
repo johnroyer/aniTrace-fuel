@@ -3,8 +3,19 @@ use \Model\Anime;
 /**
  * Methods for Ajax request in animtion page.
  **/
-class Controller_Anime_Ajax extends Controller_Anime
+class Controller_Anime_Ajax extends Controller
 {
+	/**
+	 * Construtor for Anime
+	 **/
+	public function before()
+	{
+		if(!Sentry::check())
+		{
+			Response::redirect(Uri::create('auth/'));
+		}
+	}
+
 	/**
 	 * Default method. Return all availible animes which is not finished user.
 	 **/
@@ -146,5 +157,18 @@ class Controller_Anime_Ajax extends Controller_Anime
 		{
 			echo json_encode(array('stat'=>'failed'));
 		}
+	}
+
+	/**
+	 * Return user information needed in views.
+	 **/
+	private function getUserInfo()
+	{
+		$user = Sentry::user();
+		$result = array(
+			'username' => $user->get('username'),
+			'isAdmin' => true,
+		);
+		return $result;
 	}
 }

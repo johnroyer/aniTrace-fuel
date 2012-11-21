@@ -10,6 +10,13 @@
                <li><a href="<?php echo Uri::create('admin/'); ?>">使用者管理</a></li>
             <?php endif; ?>
 
+					<li id="watchable-list" class="">
+						<a href="<?php echo uri::create('anime/'); ?>"><i class="icon-list-ul"></i>動畫清單</a>
+					</li>
+					<li id="download-list" class="">
+						<a href="<?php echo Uri::create('anime/download/'); ?>"><i class="icon-download-alt"></i>下載清單</a>
+					</li>
+
                <li class="dropdown">
                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                   <i class="icon-user icon-white"></i>
