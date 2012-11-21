@@ -23,12 +23,12 @@ class Anime extends \Model
 				->from('anime_lists')
 				->where('user_id', Sentry::user()->get('id'))
 				->where_open()
-					->where('download', 0)
-					->where('volumn', 0)
+				->where('download', 0)
+				->where('volumn', 0)
 				->where_close()
 				->or_where_open()
-					->where('download', '>', 'volumn')
-					->or_where('finished', '0')
+				->where('download', '>', 'volumn')
+				->or_where('finished', '0')
 				->or_where_close()
 				->execute()->as_array();
 		}
@@ -43,50 +43,53 @@ class Anime extends \Model
 		elseif( $type == 'watchable' )
 		{
 			$sql  = 'select * from anime_lists
-							where user_id = ' . Sentry::user()->get('id') .'
-							and (
-								(`download` = 0 and `volumn` = 0)
-								or (`download` > `volumn` or `finished` = 0)
-							) ';
+				where user_id = ' . Sentry::user()->get('id') .'
+				and (
+						(`download` = 0 and `volumn` = 0)
+						or (`download` > `volumn` or `finished` = 0)
+					 ) ';
 			return DB::query($sql)->execute()->as_array();
 		}
 	}
 
 	/**
-		* Get anime information.
-		* @param  int    anime ID
-		* @return array  properties of anime
+	 * Get anime information.
+	 * @param  int    anime ID
+	 * @return array  properties of anime
 	 **/
 	public static function getAnime($id = 0)
 	{
-      if( $id != 0 )
-      {
-         return DB::select()
-            ->from('anime_lists')
-            ->where('user_id', Sentry::user()->get('id'))
-            ->where('id', $id)
-            ->execute()->as_array()[0];
-      }
+		if( $id != 0 )
+		{
+			$result = DB::select()
+				->from('anime_lists')
+				->where('user_id', Sentry::user()->get('id'))
+				->where('id', $id)
+				->execute()->as_array();
+			return $result[0];
+		}
 	}
 
 	/**
-		* Get anime volumn.
-		* @param  int anime ID
-		* @return int anime volumn
+	 * Get anime volumn.
+	 * @param  int anime ID
+	 * @return int anime volumn
 	 **/
 	public static function getVolumn($id = 0)
 	{
-		return Anime::getAnime($id)['volumn'];
+		$result = Anime::getAnime($id);
+		return $result['volumn'];
 	}
 
 	/**
-		* Get anime download value.
-		* @param  int anime ID
-		* @return int anime download
+	 * Get anime download value.
+	 * @param  int anime ID
+	 * @return int anime download
 	 **/
 	public static function getDownload($id = 0)
 	{
-		return Anime::getAnime($id)['download'];
+		$result = Anime::getAnime($id);
+		return $result['download'];
 	}
 
 	/**
@@ -115,8 +118,8 @@ class Anime extends \Model
 	}
 
 	/**
-		* Add anime volumn by one.
-		* @param  int anime ID
+	 * Add anime volumn by one.
+	 * @param  int anime ID
 	 **/
 	public static function volumnUp($id)
 	{
@@ -130,8 +133,8 @@ class Anime extends \Model
 	}
 
 	/**
-		* Subtract anime volumn by one until volumn equal 0.
-		* @param  int anime ID
+	 * Subtract anime volumn by one until volumn equal 0.
+	 * @param  int anime ID
 	 **/
 	public static function volumnDown($id)
 	{
@@ -148,23 +151,23 @@ class Anime extends \Model
 	}
 
 	/**
-		* Add download value by one.
-		* @param  int anime ID
+	 * Add download value by one.
+	 * @param  int anime ID
 	 **/
 	public static function downloadUp($id)
 	{
 		$download = Anime::getDownload($id);
 		$download++;
-			DB::update('anime_lists')
-				->where('id', $id)
-				->where('user_id', Sentry::user()->get('id'))
-				->value('download', $download)
-				->execute();
+		DB::update('anime_lists')
+			->where('id', $id)
+			->where('user_id', Sentry::user()->get('id'))
+			->value('download', $download)
+			->execute();
 	}
 
 	/**
-		* Subtract anime download by one until download equal 0.
-		* @param  int anime ID
+	 * Subtract anime download by one until download equal 0.
+	 * @param  int anime ID
 	 **/
 	public static function downloadDown($id)
 	{
@@ -181,13 +184,14 @@ class Anime extends \Model
 	}
 
 	/**
-		* Modify finish status between 0 and 1.
-		* 0 if not finished, 1 if finished.
-		* @param  int anime ID
+	 * Modify finish status between 0 and 1.
+	 * 0 if not finished, 1 if finished.
+	 * @param  int anime ID
 	 **/
 	public static function setFinished($id)
 	{
-		$finished = Anime::getAnime($id)['finished'];
+		$anime = Anime::getAnime($id);
+		$finished = $anime['finished'];
 		$finished = ( $finished + 1 ) % 2;  // Swap between 0 and 1
 		DB::update('anime_lists')
 			->where('id', $id)
@@ -197,9 +201,9 @@ class Anime extends \Model
 	}
 
 	/**
-		* Add a new anime.
-		* @param  array anime information, element 'name' is needed.
-		* @return array anime builded.
+	 * Add a new anime.
+	 * @param  array anime information, element 'name' is needed.
+	 * @return array anime builded.
 	 **/
 	public static function addAnime($data)
 	{
