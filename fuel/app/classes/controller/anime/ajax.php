@@ -122,4 +122,29 @@ class Controller_Anime_Ajax extends Controller_Anime
 			echo json_encode(array('stat'=>'input error'));
 		}
 	}
+
+	/**
+	 * Modify anime information
+	 * @return  json  anime information after update
+	 **/
+	public function action_mod()
+	{
+		$id = intval(Input::post('id', 0));
+		$data = array(
+				'id' => $id,
+				'name' => Input::post('name', ''),
+				'sub' => Input::post('sub', ''),
+				'volumn' => intval(Input::post('vol', 0)),
+				'download' => intval(Input::post('buy', 0)),
+				'link' => Input::post('link', ''),
+				);
+		if( $id > 0 && $data['name'] != '' )
+		{
+			echo json_encode(Anime::setAnime($data));
+		}
+		else
+		{
+			echo json_encode(array('stat'=>'failed'));
+		}
+	}
 }

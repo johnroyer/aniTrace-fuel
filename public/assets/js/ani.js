@@ -53,7 +53,7 @@ function renewList( response ){
             .appendTo('#ani-list > tbody > tr:last');
          var $currRow = $('#ani-list > tbody > tr:last');
 
-         $currRow.find('td.col-act > .act-edit').attr('data-id', response[aniId]['sn'] );
+         $currRow.find('td.col-act > .act-edit').attr('data-id', response[aniId]['id'] );
 
          if( response[aniId].finished == 1 )
             $currRow.find('i.icon-ok').addClass('finished');
@@ -199,7 +199,7 @@ $('#dialog-edit').on('show', function(){
 // Bind click event to submit button in dialog
 $('#submit-new-animation').click( function(){
       console.log('form submit');
-      $.post( site_url+'anime/ajax/add/', $('form.active').serializeArray() , 
+      e.post( site_url+'anime/ajax/add/', $('form.active').serializeArray() ,
          function( response ){ 
             // Add Animation into list
             var tmpl = $('#row-template').clone().removeAttr('id');

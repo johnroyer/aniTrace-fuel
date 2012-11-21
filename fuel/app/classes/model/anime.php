@@ -102,6 +102,13 @@ class Anime extends \Model
 		$id = Arr::get($data, 'id', '');
 		if( Arr::is_assoc($data) && $id != '')
 		{
+			// Validate input data
+			$data['user_id'] = Sentry::user()->get('id');
+			$data['sub'] = Arr::get($data, 'sub', '');
+			$data['volumn'] = Arr::get($data, 'volumn', '0');
+			$data['download'] = Arr::get($data, 'download', '0');
+			$data['link'] = Arr::get($data, 'link', '');
+
 			// Check value of volumn and download, Minumal value is 0.
 			if( $data['volumn'] < 0 )
 			{
