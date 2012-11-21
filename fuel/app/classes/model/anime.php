@@ -93,7 +93,9 @@ class Anime extends \Model
 	}
 
 	/**
-	 * 
+	 * Update anime data
+	 * @param  array  anime information
+	 * @return array  anime information after update
 	 **/
 	public static function setAnime($data='')
 	{
@@ -109,11 +111,14 @@ class Anime extends \Model
 			{
 				$data['download'] = 0;
 			}
+			Arr::delete($data, 'id');
+			Arr::delete($data, 'user_id');
 			$result = DB::update('anime_lists')
 				->where('id', $id)
 				->where('user_id', Sentry::user()->get('id'))
 				->set( $data )
 				->execute();
+			return Anime::getAnime($id);
 		}
 	}
 
