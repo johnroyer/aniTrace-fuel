@@ -238,7 +238,7 @@ $('#submit-animation-change').click( function(){
    console.log('submiting changes');
    var data = $('form.active').serializeArray();
    data.push( {name:'id', value: $('form.active').attr('data-id') } );
-   $.post( site_url+'/ajax/mod/', data , function( response ){
+   $.post( site_url+'anime/ajax/mod/', data , function( response ){
       // Update view
       var id = response.id;
       var $row = $('tr#' + id );
