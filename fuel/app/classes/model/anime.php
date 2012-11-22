@@ -22,14 +22,6 @@ class Anime extends \Model
 			return DB::select()
 				->from('anime_lists')
 				->where('user_id', Sentry::user()->get('id'))
-				->where_open()
-				->where('download', 0)
-				->where('volumn', 0)
-				->where_close()
-				->or_where_open()
-				->where('download', '>', 'volumn')
-				->or_where('finished', '0')
-				->or_where_close()
 				->order_by('id', 'asc')
 				->execute()->as_array();
 		}

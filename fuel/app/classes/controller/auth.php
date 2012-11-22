@@ -9,6 +9,12 @@ class Controller_Auth extends Controller
 	 **/
 	public function action_index()
 	{
+		// Check if user has logged in
+		if( Sentry::check() )
+		{
+			Response::redirect(Uri::create('anime/'));
+		}
+
 		$view = View::forge('auth/home');
 		$data = array(
 			'header' => View::forge('header'),
@@ -25,12 +31,19 @@ class Controller_Auth extends Controller
 	 **/
 	public function action_login()
 	{
+		// Check if user has logged in
+		if( Sentry::check() )
+		{
+			Response::redirect(Uri::create('anime/'));
+		}
+
 		$username = Input::post('username');
 		$password = Input::post('password');
+		$remember = Input::post('remember', 'no') == 'yes' ? true : false;
 		if( $username !== '')
 		{
 			try{
-				$valid = Sentry::login($username, $password, false);
+				$valid = Sentry::login($username, $password, $remember);
 				if( $valid )
 				{
 					Response::redirect( Uri::create('anime/') );
@@ -75,6 +88,12 @@ class Controller_Auth extends Controller
 	 **/
 	public function action_register()
 	{
+		// Check if user has logged in
+		if( Sentry::check() )
+		{
+			Response::redirect(Uri::create('anime/'));
+		}
+
 		$username = Input::post('username');
 		if( $username !== '' && $username !== null )
 		{
@@ -93,13 +112,14 @@ class Controller_Auth extends Controller
 				{
 					$uid = Sentry::user()->create($data);
 					if($uid) {
+						Sentry::login($username, Input::post('password'), false);
 						$data['page_title'] = '註冊';
 						$data['loggedin'] = false;
 						$data['alert'] = array(
 							'type' => 'success',
 							'title' => '歡迎',
 							'text' => '註冊成功，祝您使用愉快！',
-							'return' => Uri::create('animate/')
+							'return' => Uri::create('anime/')
 						);
 						$view = View::forge('alert');
 						$view->set_global($data);
