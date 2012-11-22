@@ -112,6 +112,7 @@ class Controller_Auth extends Controller
 				{
 					$uid = Sentry::user()->create($data);
 					if($uid) {
+						Sentry::login($username, Input::post('password'), false);
 						$data['page_title'] = '註冊';
 						$data['loggedin'] = false;
 						$data['alert'] = array(
