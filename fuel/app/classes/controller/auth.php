@@ -5,6 +5,17 @@
 class Controller_Auth extends Controller
 {
 	/**
+	 * Redirect if user loggedin.
+	 **/
+	public function before()
+	{
+		if( Sentry::check() )
+		{
+			Response::redirect(Uri::create('anime/'));
+		}
+	}
+
+	/**
 	 * Default page. Show login and register form.
 	 **/
 	public function action_index()
