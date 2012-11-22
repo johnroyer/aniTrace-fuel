@@ -5,21 +5,16 @@
 class Controller_Auth extends Controller
 {
 	/**
-	 * Redirect if user loggedin.
-	 **/
-	public function before()
-	{
-		if( Sentry::check() )
-		{
-			Response::redirect(Uri::create('anime/'));
-		}
-	}
-
-	/**
 	 * Default page. Show login and register form.
 	 **/
 	public function action_index()
 	{
+		// Check if user has logged in
+		if( Sentry::check() )
+		{
+			Response::redirect(Uri::create('anime/'));
+		}
+
 		$view = View::forge('auth/home');
 		$data = array(
 			'header' => View::forge('header'),
@@ -36,6 +31,12 @@ class Controller_Auth extends Controller
 	 **/
 	public function action_login()
 	{
+		// Check if user has logged in
+		if( Sentry::check() )
+		{
+			Response::redirect(Uri::create('anime/'));
+		}
+
 		$username = Input::post('username');
 		$password = Input::post('password');
 		$remember = Input::post('remember', 'no') == 'yes' ? true : false;
@@ -87,6 +88,12 @@ class Controller_Auth extends Controller
 	 **/
 	public function action_register()
 	{
+		// Check if user has logged in
+		if( Sentry::check() )
+		{
+			Response::redirect(Uri::create('anime/'));
+		}
+
 		$username = Input::post('username');
 		if( $username !== '' && $username !== null )
 		{
