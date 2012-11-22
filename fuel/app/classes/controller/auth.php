@@ -118,7 +118,7 @@ class Controller_Auth extends Controller
 							'type' => 'success',
 							'title' => '歡迎',
 							'text' => '註冊成功，祝您使用愉快！',
-							'return' => Uri::create('animate/')
+							'return' => Uri::create('anime/')
 						);
 						$view = View::forge('alert');
 						$view->set_global($data);
