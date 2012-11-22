@@ -27,10 +27,11 @@ class Controller_Auth extends Controller
 	{
 		$username = Input::post('username');
 		$password = Input::post('password');
+		$remember = Input::post('remember', 'no') == 'yes' ? true : false;
 		if( $username !== '')
 		{
 			try{
-				$valid = Sentry::login($username, $password, false);
+				$valid = Sentry::login($username, $password, $remember);
 				if( $valid )
 				{
 					Response::redirect( Uri::create('anime/') );
