@@ -30,6 +30,7 @@ class Anime extends \Model
 				->where('download', '>', 'volumn')
 				->or_where('finished', '0')
 				->or_where_close()
+				->order_by('id', 'asc')
 				->execute()->as_array();
 		}
 		elseif( $type == 'download' )
@@ -38,6 +39,7 @@ class Anime extends \Model
 				->from('anime_lists')
 				->where('user_id', Sentry::user()->get('id'))
 				->and_where('finished', 0)
+				->order_by('id', 'asc')
 				->execute()->as_array();
 		}
 		elseif( $type == 'watchable' )
@@ -47,7 +49,8 @@ class Anime extends \Model
 				and (
 						(`download` = 0 and `volumn` = 0)
 						or (`download` > `volumn` or `finished` = 0)
-					 ) and download > 0 and download > volumn ';
+				) and download > 0 and download > volumn 
+				order by `id` asc ';
 			return DB::query($sql)->execute()->as_array();
 		}
 	}
