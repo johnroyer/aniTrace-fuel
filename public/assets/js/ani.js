@@ -35,6 +35,8 @@ function getWatchableList( ) {
          // Bind clicked event to icons
          $('td.col-vol > div > i.icon-plus').click( function(){ volClicked('up', $(this) ); } );
          $('td.col-vol > div > i.icon-minus').click( function(){ volClicked('down', $(this) ); } );
+         $('td.col-buy > div > i.icon-plus').click( function(){ buyClicked('up', $(this) ); } );
+         $('td.col-buy > div > i.icon-minus').click( function(){ buyClicked('down', $(this) ); } );
 
          // Bind event for finish button
          $('i.icon-ok').click( function(){ markFinished( $(this) ); });
@@ -47,13 +49,13 @@ function renewList( response ){
    if( !('error' in response) ){
       for( aniId in response ){
          var tmpl = $('#row-template').clone().removeAttr('id');
-         $('<tr></tr>').attr('id', response[aniId]['sn'])
+         $('<tr></tr>').attr('id', response[aniId]['id'])
             .insertAfter('#ani-list > tbody > tr:last');
          var result = $.tmpl( tmpl, response[aniId] )
             .appendTo('#ani-list > tbody > tr:last');
          var $currRow = $('#ani-list > tbody > tr:last');
 
-         $currRow.find('td.col-act > .act-edit').attr('data-id', response[aniId]['sn'] );
+         $currRow.find('td.col-act > .act-edit').attr('data-id', response[aniId]['id'] );
 
          if( response[aniId].finished == 1 )
             $currRow.find('i.icon-ok').addClass('finished');
@@ -83,12 +85,11 @@ function markFinished( $clicked ){
    var id = $clicked.parent().parent().attr('id');
    $.get( site_url + 'anime/ajax/finished/' + id ,
       function( response ){
-         response = response[0];
          if( response.finished == 1 ){
-            $('tr#' + response.sn).find('i.icon-ok').addClass('finished');
+            $('tr#' + response.id).find('i.icon-ok').addClass('finished');
             console.log('Marked as finished');
          }else{
-            $('tr#' + response.sn).find('i.icon-ok').removeClass('finished');
+            $('tr#' + response.id).find('i.icon-ok').removeClass('finished');
             console.log('Marked as unfinished');
          }
       }, 'json' )
@@ -102,7 +103,7 @@ function volClicked( act, $clicked ) {
       var data = {
          errorMsg: 'vol access failed',
          onSuccess: function( response ){
-            $vol.text( response[0].vol );
+            $vol.text( response.volumn );
          }
       };
       if( act === 'up' ){
@@ -122,16 +123,16 @@ function buyClicked( act, $clicked ) {
       var $buy = $clicked.parent().parent().children('div.buy');
       var buy = Number( $buy.text() );
       var data = {
-         errorMsg: 'buy access failed',
+         errorMsg: 'download access failed',
          onSuccess: function( response ){
-            $buy.text( response[0].buy );
+            $buy.text( response.download );
          }
       };
       if( act === 'up' ){
-         data.path = 'buy/up/' + id;
+         data.path = 'download/up/' + id;
          req( data );
       }else{
-         data.path = 'buy/down/' + id;
+         data.path = 'download/down/' + id;
          req( data );
       }
    }
@@ -181,11 +182,11 @@ $('#dialog-edit').on('show', function(){
          path: 'anime/' + aniId,
          errorMsg: 'vol access failed',
          onSuccess: function( response ){
-            name = response[0].name;
-            link = response[0].link;
-            sub = response[0].sub;
-            vol = response[0].vol;
-            buy = response[0].buy;
+            name = response.name;
+            link = response.link;
+            sub = response.sub;
+            vol = response.volumn;
+            buy = response.download;
             $this.find('#ani-name').val( name );
             $this.find('#ani-link').val( link );
             $this.find('#ani-sub').val( sub );
@@ -200,20 +201,20 @@ $('#dialog-edit').on('show', function(){
 // Bind click event to submit button in dialog
 $('#submit-new-animation').click( function(){
       console.log('form submit');
-      $.post( site_url+'anime/ajax/add/', $('form.active').serializeArray() , 
+      $.post( site_url+'anime/ajax/add/', $('form.active').serializeArray() ,
          function( response ){ 
             // Add Animation into list
             var tmpl = $('#row-template').clone().removeAttr('id');
-            $('<tr></tr>').attr('id', response[0].sn)
+            $('<tr></tr>').attr('id', response.id)
             .insertAfter('#ani-list > tbody > tr:last');
-            var result = $.tmpl( tmpl, response[0] )
+            var result = $.tmpl( tmpl, response )
             .appendTo('#ani-list > tbody > tr:last');
             $row = $('#ani-list > tbody > tr:last');
 
-            $row.find('td.col-act > .act-edit').attr('data-id', response[0].sn );
+            $row.find('td.col-act > .act-edit').attr('data-id', response.id );
 
-            if( response[0].link != null && response[0].link != '' ){
-               $row.find('.link > a').attr('href', response[0].link);
+            if( response.link != null && response.link != '' ){
+               $row.find('.link > a').attr('href', response.link);
                $row.find('.link').removeClass('hide');
             }
             
@@ -239,15 +240,15 @@ $('#submit-animation-change').click( function(){
    data.push( {name:'id', value: $('form.active').attr('data-id') } );
    $.post( site_url+'anime/ajax/mod/', data , function( response ){
       // Update view
-      var id = response[0].sn;
+      var id = response.id;
       var $row = $('tr#' + id );
-      $row.find('.name').text( response[0].name );
-      $row.find('.col-sub').text( response[0].sub );
-      $row.find('.vol').text( response[0].vol );
-      $row.find('.buy').text( response[0].buy );
+      $row.find('.name').text( response.name );
+      $row.find('.col-sub').text( response.sub );
+      $row.find('.vol').text( response.volumn );
+      $row.find('.buy').text( response.download );
       
-      if( response[0].link != null && response[0].link != '' ){
-         $row.find('.link > a').attr('href', response[0].link);
+      if( response.link != null && response.link != '' ){
+         $row.find('.link > a').attr('href', response.link);
          $row.find('.link').removeClass('hide');
       }else{
          $row.find('.link > a').attr('href', '');
@@ -265,6 +266,10 @@ $('#submit-animation-change').click( function(){
 
 // Get anime list
 $('document').ready(  function(){
+      if( navbarHighlight == 'download-list' ){
          getAniList();
+      }else{
+         getWatchableList();
+      }
 });
 

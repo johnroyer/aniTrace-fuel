@@ -20,7 +20,22 @@ class Controller_Anime extends Controller
 	 **/
 	public function action_index()
 	{
-		$view = View::forge('anime/list');
+		$view = View::forge('anime/watchable');
+		$data = array(
+			'page_title' => '動漫清單',
+			'loggedin' => true,
+			'user' => $this->getUserInfo(),
+		);
+		$view->set_global($data);
+		return $view;
+	}
+
+	/**
+	 * Show anime list for download
+	 **/
+	public function action_download()
+	{
+		$view = View::forge('anime/download');
 		$data = array(
 			'page_title' => '動漫清單',
 			'loggedin' => true,
