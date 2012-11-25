@@ -53,7 +53,7 @@ class Controller_Anime extends Controller
 		$user = Sentry::user();
 		$result = array(
 			'username' => $user->get('username'),
-			'isAdmin' => true,
+			'isAdmin' => $user->in_group('admin'),
 		);
 		return $result;
 	}
