@@ -17,7 +17,7 @@ class Controller_Admin extends Controller
 		{
 			if(!Sentry::in_group('admin'))
 			{
-				Response::redirect(Uri::create('anime/');
+				Response::redirect(Uri::create('anime/'));
 			}
 		}
 	}
