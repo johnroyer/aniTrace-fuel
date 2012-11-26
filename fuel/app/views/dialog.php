@@ -1,7 +1,6 @@
-<?php
-	echo View::forge('header');
-	echo View::forge('navbar');
-?>
+<?php  $this->load->view('header');  ?>
+<?php  $this->load->view('navbar');  ?>
+<?php  $this->load->helper('url');  ?>
 
 <div class="in-center">
 
@@ -26,13 +25,11 @@
 
    <p><?php echo $alert['text']; ?></p>
 
-   <?php if( isset( $alert['return'] ) ): ?>
-         <a class="btn" href="<?php echo $alert['return']; ?>">OK</a>
+   <?php if( isset( $alert['next'] ) ): ?>
+      <a class="btn" href="<?php echo $alert['next']; ?>"><?php echo $alert['next_hint']; ?></a>
    <?php endif; ?>
 
    </div>
 </div>
 
-<?php
-	echo View::forge('footer');
-
+<?php $this->load->view('footer');  ?>
