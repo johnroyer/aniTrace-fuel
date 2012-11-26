@@ -65,6 +65,31 @@ class Controller_Admin extends Controller
 	 **/
 	public function action_deleteUser($id=-1, $confirm='')
 	{
+		if( $id == -1 )
+		{
+			Response::redirect(Uri::create('admin/userList'));
+		}
+		else
+		{
+			// Check if ID is himself
+			if( $id == Sentry::user()->get('id') )
+			{
+				// Can not delete himself
+			}
+			else
+			{
+				if( $confirm == 'confirmed' )
+				{
+					// Delete user data
+
+					// Delete account
+				}
+				else
+				{
+					// Show confirm dialog
+				}
+			}
+		}
 	}
 
 	/**
