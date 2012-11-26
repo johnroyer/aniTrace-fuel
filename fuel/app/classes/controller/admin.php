@@ -27,15 +27,33 @@ class Controller_Admin extends Controller
 	 **/
 	public function action_index()
 	{
+		Response::redirect(Uri::create('admin/userList'));
+	}
+
+	/**
+	 * List users.
+	 * @param string 'admin' for admin, empty for general list
+	 **/
+	public function action_userList($type='')
+	{
 		$view = View::forge('admin/list');
 		$data = array(
 			'page_title' => '使用者管理',
 			'loggedin' => true,
 			'user' => $this->getUserInfo(),
-			'tab_general' => 'active',
-			'tab_admin' => '',
-			'users' => Sentry::user()->all(),
 		);
+		if( $type == 'admin' )
+		{
+			$data['users'] = Sentry::group('admin')->users();
+			$data['tab_general'] = '';
+			$data['tab_admin'] = 'active';
+		}
+		else
+		{
+			$data['users'] = Sentry::user()->all();
+			$data['tab_general'] = 'active';
+			$data['tab_admin'] = '';
+		}
 		$view->set_global($data);
 		return $view;
 	}
