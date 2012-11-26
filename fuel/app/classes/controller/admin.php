@@ -75,6 +75,21 @@ class Controller_Admin extends Controller
 			if( $id == Sentry::user()->get('id') )
 			{
 				// Can not delete himself
+				$data = array(
+					'page_title' => '刪除帳號',
+					'loggedin' => true,
+					'type' => 'warning',
+					'user' => $this->getUserInfo(),
+					'dialog' => array(
+						'title' => '警告',
+						'text' => '無法刪除自己的帳號',
+						'next' => Uri::create('admin/userList'),
+						'next_hint' => '返回',
+					),
+				);
+				$view = View::forge('dialog');
+				$view->set_global($data);
+				return $view;
 			}
 			else
 			{
