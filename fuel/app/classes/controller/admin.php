@@ -59,6 +59,15 @@ class Controller_Admin extends Controller
 	}
 
 	/**
+		* Delete selected user.
+		* @param  int    user ID
+		* @param  string 'confirmed' if confirm to delete
+	 **/
+	public function action_deleteUser($id=-1, $confirm='')
+	{
+	}
+
+	/**
 	 * Get user data.
 	 **/
 	private function getUserInfo()
