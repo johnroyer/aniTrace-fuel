@@ -1,6 +1,7 @@
-<?php  $this->load->view('header');  ?>
-<?php  $this->load->view('navbar');  ?>
-<?php  $this->load->helper('url');  ?>
+<?php
+   echo View::forge('header');
+   echo View::forge('navbar');
+?>
 
 <h2>使用者管理</h2>
 <p style="margin-top: 25px;"> </p>
@@ -8,8 +9,8 @@
 <div class="tabbable">
 
    <ul class="nav nav-tabs ">
-      <li class="<?php echo $tab_general; ?>"><a href="<?php echo site_url('admin/userList'); ?>">一般</a></li>
-      <li class="<?php echo $tab_admin; ?>"><a href="<?php echo site_url('admin/userList/admin'); ?>">管理員</a></li>
+      <li class="<?php echo $tab_general; ?>"><a href="<?php echo Uri::create('admin/userList'); ?>">一般</a></li>
+      <li class="<?php echo $tab_admin; ?>"><a href="<?php echo Uri::create('admin/userList/admin'); ?>">管理員</a></li>
       <li>
          <form class="form-search admin-tabs-search" action="#" method="post" accept-charset="utf-8">
          <i class="icon-search admin-tabs-search-icon"></i>
@@ -36,17 +37,17 @@
                <td class="row-username"></td>
                <td class="row-email"></td>
                <td class="row-action">
-                  <a href="<?php echo site_url('admin/deleteUser/'); ?>" class="action-link deleteUser"><i class="icon-trash action-icon"></i>刪除</a>
+                  <a href="<?php echo Uri::create('admin/deleteUser'); ?>" class="action-link deleteUser"><i class="icon-trash action-icon"></i>刪除</a>
                </td>
             </tr>
 
             <?php foreach($users as $u): ?>
                <tr>
-                  <td><?php echo $u->id; ?></td>
-                  <td><?php echo $u->username; ?></td>
-                  <td><?php echo $u->email; ?></td>
+                  <td><?php echo $u['id']; ?></td>
+                  <td><?php echo $u['username']; ?></td>
+                  <td><?php echo $u['email']; ?></td>
                   <td>
-                     <a href="<?php echo site_url('admin/deleteUser/'.$u->id); ?>" class="action-link"><i class="icon-trash action-icon"></i> 刪除</a>
+                     <a href="<?php echo Uri::create('admin/deleteUser/' . $u['id']); ?>" class="action-link"><i class="icon-trash action-icon"></i> 刪除</a>
                   </td>
                </tr>
             <?php endforeach; ?>
@@ -57,4 +58,4 @@
    </div>
 </div>
 
-<?php $this->load->view('footer');  ?>
+<?php echo view::forge('footer'); ?>
