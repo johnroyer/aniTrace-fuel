@@ -32,7 +32,7 @@ class Controller_Admin extends Controller
 			'page_title' => '使用者管理',
 			'loggedin' => true,
 			'user' => $this->getUserInfo(),
-			'tab_general' => '',
+			'tab_general' => 'active',
 			'tab_admin' => '',
 			'users' => Sentry::user()->all(),
 		);
