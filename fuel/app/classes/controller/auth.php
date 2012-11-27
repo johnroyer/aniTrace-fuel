@@ -50,14 +50,15 @@ class Controller_Auth extends Controller
 				}
 				else
 				{
-					$view = View::forge('alert');
+					$view = View::forge('dialog');
 					$data['page_title'] = '登入';
 					$data['loggedin'] = false;
-					$data['alert'] = array(
+					$data['dialog'] = array(
 						'type' => '',
 						'title' => '登入失敗',
 						'text' => '請檢查您輸入的帳號、密碼，再重試一次。',
-						'return' => Uri::create('auth/'),
+						'next' => Uri::create('auth/'),
+						'next_hint' => '重試',
 					);
 					$view->set_global($data);
 					return $view;
@@ -113,15 +114,16 @@ class Controller_Auth extends Controller
 					$uid = Sentry::user()->create($data);
 					if($uid) {
 						Sentry::login($username, Input::post('password'), false);
-						$data['page_title'] = '註冊';
+						$data['page_title'] = 'aniTrace';
 						$data['loggedin'] = false;
-						$data['alert'] = array(
+						$data['dialog'] = array(
 							'type' => 'success',
 							'title' => '歡迎',
 							'text' => '註冊成功，祝您使用愉快！',
-							'return' => Uri::create('anime/')
+							'next' => Uri::create('anime/'),
+							'next_hint' => '追蹤新的動畫',
 						);
-						$view = View::forge('alert');
+						$view = View::forge('dialog');
 						$view->set_global($data);
 						return $view;
 					}
@@ -129,13 +131,14 @@ class Controller_Auth extends Controller
 					{
 						$data['page_title'] = '註冊';
 						$data['loggedin'] = false;
-						$data['alert'] = array(
+						$data['dialog'] = array(
 							'type' => 'warning',
 							'title' => '註冊失敗',
 							'text' => '請檢查您輸入的帳號、密碼，再重試一次。',
-							'return' => Uri::create('auth/')
+							'next' => Uri::create('auth/'),
+							'next_hint' => '重試',
 						);
-						$view = View::forge('alert');
+						$view = View::forge('dialog');
 						$view->set_global($data);
 						return $view;
 					}
@@ -144,13 +147,14 @@ class Controller_Auth extends Controller
 				{
 					$data['page_title'] = '註冊';
 					$data['loggedin'] = false;
-					$data['alert'] = array(
+					$data['dialog'] = array(
 						'type' => 'warning',
 						'title' => '註冊失敗',
 						'text' => $e->getMessage(),
-						'return' => Uri::create('auth/')
+						'next' => Uri::create('auth/'),
+						'next_hint' => '重試',
 					);
-					$view = View::forge('alert');
+					$view = View::forge('dialog');
 					$view->set_global($data);
 					return $view;
 				}
@@ -159,13 +163,14 @@ class Controller_Auth extends Controller
 			{
 				$data['page_title'] = '註冊';
 				$data['loggedin'] = false;
-				$data['alert'] = array(
+				$data['dialog'] = array(
 					'type' => 'warning',
 					'title' => '註冊失敗',
 					'text' => '請檢查帳號與電子郵件格式，再重試一次。',
-					'return' => Uri::create('auth/')
+					'next' => Uri::create('auth/'),
+					'next_hint' => '重試',
 				);
-				$view = View::forge('alert');
+				$view = View::forge('dialog');
 				$view->set_global($data);
 				return $view;
 			}
