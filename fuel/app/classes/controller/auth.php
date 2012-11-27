@@ -52,7 +52,24 @@ class Controller_Auth extends Controller
 			}
 			catch( SentryAuthException $e )
 			{
-				echo $e->getMessage();
+				$data['page_title'] = '登入';
+				$data['loggedin'] = false;
+				if( strpos($e->getMessage(), 'does not exist') !== false )
+				{
+					$data['alert'] = array(
+						'type' => '',
+						'title' => '登入失敗',
+						'text' => '請檢查您輸入的帳號、密碼，再重試一次。',
+						'return' => Uri::create('auth/'),
+					);
+					$view = View::forge('alert');
+					$view->set_global($data);
+					return $view;
+				}
+				else
+				{
+					return $e->getMessage();
+				}
 			}
 		}
 		else
