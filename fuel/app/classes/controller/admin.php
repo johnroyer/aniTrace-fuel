@@ -96,8 +96,27 @@ class Controller_Admin extends Controller
 				if( $confirm == 'confirmed' )
 				{
 					// Delete user data
+               $result = DB::delete('anime_list')
+                  ->where('user_id', $id);
 
 					// Delete account
+               Sentry::user(intval($id))->delete();
+
+					$data = array(
+						'page_title' => '刪除帳號',
+						'loggedin' => true,
+						'user' => $this->getUserInfo(),
+                  'dialog' => array(
+                     'type' => 'success',
+                     'title' => '刪除成功',
+                     'text' => '帳號已刪除',
+                     'next' => Uri::create('admin/userList'),
+                     'next_hint' => '返回',
+                  ),
+					);
+               $view = View::forge('dialog');
+               $view->set_global($data);
+               return $view;
 				}
 				else
 				{
