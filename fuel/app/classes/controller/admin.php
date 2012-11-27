@@ -102,6 +102,20 @@ class Controller_Admin extends Controller
 				else
 				{
 					// Show confirm dialog
+					$view = View::forge('admin/delete_confirm');
+					$data = array(
+						'page_title' => '刪除帳號',
+						'loggedin' => true,
+						'type' => 'warning',
+						'user' => $this->getUserInfo(),
+						'target' => array(
+								'id' => '',
+								'username' => '',
+								'email' => '',
+							),
+					);
+					$view->set_global($data);
+					return $view;
 				}
 			}
 		}
