@@ -25,6 +25,8 @@
                   </a>
 
                   <ul class="dropdown-menu">
+							<li><a href="<?php echo Uri::create('user/'); ?>">帳號資訊</a></li>
+							<li class="divider"></li>
                      <li><a href="<?php echo Uri::create('auth/logout/'); ?>">登出</a></li>
                   </ul>
 
