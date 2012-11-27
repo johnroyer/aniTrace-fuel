@@ -103,15 +103,16 @@ class Controller_Admin extends Controller
 				{
 					// Show confirm dialog
 					$view = View::forge('admin/delete_confirm');
+               $user = Sentry::user(intval($id));
 					$data = array(
 						'page_title' => '刪除帳號',
 						'loggedin' => true,
 						'type' => 'warning',
 						'user' => $this->getUserInfo(),
 						'target' => array(
-								'id' => '',
-								'username' => '',
-								'email' => '',
+								'id' => $user->get('id'),
+								'username' => $user->get('username'),
+								'email' => $user->get('email'),
 							),
 					);
 					$view->set_global($data);
