@@ -51,6 +51,27 @@ class Controller_User extends Controller
 		else
 		{
 			// Validate password
+			if( Input::post('password', '') != Input::post('passwordConfirm', '') )
+			{
+				try
+				{
+					if( Sentry::user()->change_password(Input::post('origPassword', ''), Input::post('password', '')) )
+					{
+						// Success
+					}
+					else
+					{
+						// Failed
+					}
+				}
+				catch( SentryUserException $e )
+				{
+				}
+			}
+			else
+			{
+				// Password confirm error
+			}
 		}
 	}
 
