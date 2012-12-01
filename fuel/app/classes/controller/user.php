@@ -51,26 +51,82 @@ class Controller_User extends Controller
 		else
 		{
 			// Validate password
-			if( Input::post('password', '') != Input::post('passwordConfirm', '') )
+			if( Input::post('password', '') == Input::post('passwordConfirm', '') )
 			{
 				try
 				{
-					if( Sentry::user()->change_password(Input::post('origPassword', ''), Input::post('password', '')) )
+					if( Sentry::user()->change_password(Input::post('password', ''), Input::post('origPassword', '')) )
 					{
 						// Success
+						$data = array(
+							'page_title' => '修改密碼',
+							'loggedin' => true,
+							'user' => $this->getUserInfo(),
+							'alert' => array(
+								'type' => 'success',
+								'title' => '密碼修改成功',
+								'text' => '密碼修改完成。',
+								'return' => Uri::create('user/')
+							),
+						);
+						$view = View::forge('alert');
+						$view->set_global($data);
+						return $view;
 					}
 					else
 					{
 						// Failed
+						$data = array(
+							'page_title' => '修改密碼',
+							'loggedin' => true,
+							'user' => $this->getUserInfo(),
+							'alert' => array(
+								'type' => 'error',
+								'title' => '密碼修改失敗',
+								'text' => '請檢查輸入的資料並再試一次。',
+								'return' => Uri::create('user/chpassword')
+							),
+						);
+						$view = View::forge('alert');
+						$view->set_global($data);
+						return $view;
 					}
 				}
 				catch( SentryUserException $e )
 				{
+						$data = array(
+							'page_title' => '修改密碼',
+							'loggedin' => true,
+							'user' => $this->getUserInfo(),
+							'alert' => array(
+								'type' => 'warning',
+								'title' => '密碼修改失敗',
+								'text' => '原有密碼錯誤，請再試一次。',
+								'return' => Uri::create('user/chpassword')
+							),
+						);
+						$view = View::forge('alert');
+						$view->set_global($data);
+						return $view;
 				}
 			}
 			else
 			{
 				// Password confirm error
+				$data = array(
+					'page_title' => '修改密碼',
+					'loggedin' => true,
+					'user' => $this->getUserInfo(),
+					'alert' => array(
+						'type' => 'warning',
+						'title' => '密碼不符',
+						'text' => '二次所輸入的密碼並不相同',
+						'return' => Uri::create('user/chpassword')
+					),
+				);
+				$view = View::forge('alert');
+				$view->set_global($data);
+				return $view;
 			}
 		}
 	}
