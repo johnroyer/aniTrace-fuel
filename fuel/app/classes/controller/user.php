@@ -33,6 +33,21 @@ class Controller_User extends Controller
 	}
 
 	/**
+	 * Change password
+	 **/
+	public function action_chpassword()
+	{
+		$view = View::forge('user/chpassword');
+		$data = array(
+			'page_title' => '修改密碼',
+			'loggedin' => true,
+			'user' => $this->getUserInfo(),
+		);
+		$view->set_global($data);
+		return $view;
+	}
+
+	/**
 	 * Return user information needed in views.
 	 **/
 	private function getUserInfo()
