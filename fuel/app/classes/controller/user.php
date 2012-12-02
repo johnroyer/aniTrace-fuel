@@ -66,7 +66,7 @@ class Controller_User extends Controller
 								'type' => 'success',
 								'title' => '密碼修改成功',
 								'text' => '密碼修改完成。',
-								'return' => Uri::create('user/')
+								'return' => Uri::create('user/chpassword')
 							),
 						);
 						$view = View::forge('alert');
