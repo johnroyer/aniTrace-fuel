@@ -2,6 +2,16 @@
 
 class Controller_Home extends Controller
 {
+	/**
+	 * Redirect if user loggedin.
+	 **/
+	public function before()
+	{
+		if( Sentry::check() )
+		{
+			Response::redirect(Uri::create('anime/'));
+		}
+	}
 
 	public function action_index()
 	{
