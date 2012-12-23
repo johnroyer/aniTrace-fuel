@@ -41,7 +41,7 @@ function usernameCheck( found ){
    }else if( found == true ){
       console.log('username found');
       checkStatReset('#username-group');
-      checkError('#username-group', 'Username has been used');
+      checkError('#username-group', '帳號已被使用');
 
    }else{
       // Hide status
@@ -53,7 +53,7 @@ $('.register #email').blur( function(){
    var email = $('#email').attr('value');
    if( email == '' ){
       checkStatReset('#email-group');
-      checkError('#email-group', 'Email can not be empty');
+      checkError('#email-group', 'Email 不可空白');
    }else{
       checkStatReset('#email-group');
 
@@ -79,7 +79,7 @@ function emailCheck( found ){
    }else if( found == true ){
       console.log('email found');
       checkStatReset('#email-group');
-      checkError('#email-group', 'Email has been used');
+      checkError('#email-group', 'Email 已被使用');
    }else{
       // Hide status
       console.log('hide message');

@@ -21,7 +21,7 @@ class Controller_Anime_Ajax extends Controller
 	 **/
 	public function action_index()
 	{
-		return json_encode(Anime::getList());
+		return json_encode(Anime::getList('download'));
 	}
 
 	/**

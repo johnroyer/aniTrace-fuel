@@ -8,7 +8,7 @@
          <meta http-equiv="refresh" content="3600" />
       <?php endif; ?>
 
-      <title>aniTrace</title>
+      <title><?php echo $page_title; ?> - aniTrace</title>
 
       <?php
          echo Asset::css('bootstrap.min.css');
