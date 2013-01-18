@@ -234,4 +234,7 @@ class Anime extends \Model
 			}
 		}
 	}
+
+   public static function deleteAnime($id){
+   }
 }
