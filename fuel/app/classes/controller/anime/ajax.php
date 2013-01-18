@@ -159,6 +159,12 @@ class Controller_Anime_Ajax extends Controller
 		}
 	}
 
+   public function action_delete($id=0) {
+      $id = intval($id);
+      if($id > 0 ){
+      }
+   }
+
 	/**
 	 * Return user information needed in views.
 	 **/
