@@ -79,15 +79,10 @@
 
    <div id="dialog-msg" class="modal hide fade">
       <h3>訊息</h3>
-
-      <div>
+         <p> </p>
          <p id="msg"></p>
-      </div>
-
       <hr>
-
       <div class="pull-right">
          <a class="btn" href="#" data-dismiss="modal" aria-hidden="true">確定</a>
       </div>
-
    </div>
