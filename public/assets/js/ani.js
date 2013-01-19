@@ -264,6 +264,18 @@ $('#submit-animation-change').click( function(){
    } );
 });
 
+function deleteAnime( $clicked ){
+   var id = $clicked.parent().parent().attr('id');
+   $.get( site_url + 'anime/ajax/delete/' + id ,
+      function( response ){
+         if( response.stat == 'ok' ){
+            // Delete row
+         }else{
+            // Show error dialog
+         }
+      }, 'json' )
+}
+
 // Get anime list
 $('document').ready(  function(){
       if( navbarHighlight == 'download-list' ){
