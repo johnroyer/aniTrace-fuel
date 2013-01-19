@@ -162,6 +162,19 @@ class Controller_Anime_Ajax extends Controller
    public function action_delete($id=0) {
       $id = intval($id);
       if($id > 0 ){
+         $affected = Anime::deleteAnime($id);
+         if( $affected == 1 )
+         {
+            echo json_encode(array('stat'=>'ok'));
+         }
+         else
+         {
+            echo json_encode(array('stat'=>'error'));
+         }
+      }
+      else
+      {
+         echo json_encode(array('stat'=>'error'));
       }
    }
 
