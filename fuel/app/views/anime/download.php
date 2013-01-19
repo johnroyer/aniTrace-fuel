@@ -32,6 +32,7 @@
             </td>
             <td class="col-act unselectable">
                <i class="act-edit act-icon icon-edit" title="修改" data-toggle="form-modal" data-target="#dialog-edit" data-id=""></i>
+               <i class="act-delete act-icon icon-trash" title="刪除"></i>
                <i class="act-icon icon-ok" title="標示為「完結」，閱畢後自動隱藏"></i>
             </td>
          </tr>

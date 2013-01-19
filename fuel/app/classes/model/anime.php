@@ -234,4 +234,15 @@ class Anime extends \Model
 			}
 		}
 	}
+
+   public static function deleteAnime($id){
+      if($id > 0)
+      {
+         $affected = DB::delete('anime_lists')
+				->where('user_id', Sentry::user()->get('id'))
+				->and_where('id', $id)
+            ->execute();
+         return $affected;
+      }
+   }
 }

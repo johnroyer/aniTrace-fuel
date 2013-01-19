@@ -20,6 +20,9 @@ function getAniList( ) {
 
          // Bind event for finish button
          $('i.icon-ok').click( function(){ markFinished( $(this) ); });
+
+         // Bind event for delete icons
+         $('i.icon-trash').click( function(){ deleteAnime( $(this) ); });
       }
    } );
 }
@@ -40,6 +43,9 @@ function getWatchableList( ) {
 
          // Bind event for finish button
          $('i.icon-ok').click( function(){ markFinished( $(this) ); });
+
+         // Bind event for delete icons
+         $('i.icon-trash').click( function(){ deleteAnime( $(this) ); });
       }
    } );
 }
@@ -263,6 +269,22 @@ $('#submit-animation-change').click( function(){
       console.log(data);
    } );
 });
+
+function deleteAnime( $clicked ){
+   var id = $clicked.parent().parent().attr('id');
+   console.log('delete anime = ' + id);
+   $.get( site_url + 'anime/ajax/delete/' + id ,
+      function( response ){
+         if( response.stat == 'ok' ){
+            // Delete row
+            $clicked.parent().parent().remove();
+         }else{
+            // Show error dialog
+            $('#dialog-msg > p#msg').text('刪除資料時發生錯誤。');
+            $('#dialog-msg').modal('show');
+         }
+      }, 'json' )
+}
 
 // Get anime list
 $('document').ready(  function(){
