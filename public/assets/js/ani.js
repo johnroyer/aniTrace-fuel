@@ -280,6 +280,8 @@ function deleteAnime( $clicked ){
             $clicked.parent().parent().remove();
          }else{
             // Show error dialog
+            $('#dialog-msg > p#msg').text('刪除資料時發生錯誤。');
+            $('#dialog-msg').modal('show');
          }
       }, 'json' )
 }
