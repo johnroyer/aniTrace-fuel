@@ -12,6 +12,7 @@
 
       <?php
          echo Asset::css('bootstrap.min.css');
+         echo Asset::css('bootstrap-responsive.min.css');
          echo Asset::css('font-awesome.css');
          echo Asset::css('style.css');
       ?>
