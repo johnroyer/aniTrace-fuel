@@ -70,11 +70,12 @@ class Controller_Auth extends Controller
 				$data['loggedin'] = false;
 				if( strpos($e->getMessage(), 'does not exist') !== false )
 				{
-					$data['alert'] = array(
+					$data['dialog'] = array(
 						'type' => '',
 						'title' => '登入失敗',
 						'text' => '請檢查您輸入的帳號、密碼，再重試一次。',
-						'return' => Uri::create('auth/'),
+						'next' => Uri::create('auth/'),
+						'next_hint' => '重試',
 					);
 					$view = View::forge('alert');
 					$view->set_global($data);
