@@ -62,14 +62,15 @@ class Controller_User extends Controller
 							'page_title' => '修改密碼',
 							'loggedin' => true,
 							'user' => $this->getUserInfo(),
-							'alert' => array(
+							'dialog' => array(
 								'type' => 'success',
 								'title' => '密碼修改成功',
 								'text' => '密碼修改完成。',
-								'return' => Uri::create('user/chpassword')
+								'next' => Uri::create('user/chpassword'),
+								'next_hint' => '繼續',
 							),
 						);
-						$view = View::forge('alert');
+						$view = View::forge('dialog');
 						$view->set_global($data);
 						return $view;
 					}
@@ -80,14 +81,15 @@ class Controller_User extends Controller
 							'page_title' => '修改密碼',
 							'loggedin' => true,
 							'user' => $this->getUserInfo(),
-							'alert' => array(
+							'dialog' => array(
 								'type' => 'error',
 								'title' => '密碼修改失敗',
 								'text' => '請檢查輸入的資料並再試一次。',
-								'return' => Uri::create('user/chpassword')
+								'next' => Uri::create('user/chpassword'),
+								'next_hint' => '重試',
 							),
 						);
-						$view = View::forge('alert');
+						$view = View::forge('dialog');
 						$view->set_global($data);
 						return $view;
 					}
@@ -98,14 +100,15 @@ class Controller_User extends Controller
 							'page_title' => '修改密碼',
 							'loggedin' => true,
 							'user' => $this->getUserInfo(),
-							'alert' => array(
+							'dialog' => array(
 								'type' => 'warning',
 								'title' => '密碼修改失敗',
 								'text' => '原有密碼錯誤，請再試一次。',
-								'return' => Uri::create('user/chpassword')
+								'next' => Uri::create('user/chpassword'),
+								'next_hint' => '重試',
 							),
 						);
-						$view = View::forge('alert');
+						$view = View::forge('dialog');
 						$view->set_global($data);
 						return $view;
 				}
@@ -117,14 +120,15 @@ class Controller_User extends Controller
 					'page_title' => '修改密碼',
 					'loggedin' => true,
 					'user' => $this->getUserInfo(),
-					'alert' => array(
+					'dialog' => array(
 						'type' => 'warning',
 						'title' => '密碼不符',
 						'text' => '二次所輸入的密碼並不相同',
-						'return' => Uri::create('user/chpassword')
+                  'next' => Uri::create('user/chpassword'),
+                  'next_hint' => '重試',
 					),
 				);
-				$view = View::forge('alert');
+				$view = View::forge('dialog');
 				$view->set_global($data);
 				return $view;
 			}
