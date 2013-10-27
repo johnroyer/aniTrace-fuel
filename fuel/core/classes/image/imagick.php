@@ -1,15 +1,13 @@
 <?php
-
 /**
  * Part of the Fuel framework.
  *
- * Image manipulation class.
- *
- * @package		Fuel
- * @version		1.0
- * @license		MIT License
- * @copyright	2010 - 2011 Fuel Development Team
- * @link		http://fuelphp.com
+ * @package    Fuel
+ * @version    1.6
+ * @author     Fuel Development Team
+ * @license    MIT License
+ * @copyright  2010 - 2013 Fuel Development Team
+ * @link       http://fuelphp.com
  */
 
 namespace Fuel\Core;
@@ -18,11 +16,11 @@ class Image_Imagick extends \Image_Driver
 {
 
 	protected $accepted_extensions = array('png', 'gif', 'jpg', 'jpeg');
-	private $imagick = null;
+	protected $imagick = null;
 
-	public function load($filename, $return_data = false)
+	public function load($filename, $return_data = false, $force_extension = false)
 	{
-		extract(parent::load($filename));
+		extract(parent::load($filename, $return_data, $force_extension));
 
 		if ($this->imagick == null)
 		{
@@ -76,6 +74,27 @@ class Image_Imagick extends \Image_Driver
 		$wmimage->readImage($filename);
 		$wmimage->evaluateImage(\Imagick::EVALUATE_MULTIPLY, $this->config['watermark_alpha'] / 100, \Imagick::CHANNEL_ALPHA);
 		$this->imagick->compositeImage($wmimage, \Imagick::COMPOSITE_DEFAULT, $x, $y);
+	}
+
+	protected function _flip($direction)
+	{
+		switch ($direction)
+		{
+			case 'vertical':
+			$this->imagick->flipImage();
+			break;
+
+			case 'horizontal':
+			$this->imagick->flopImage();
+			break;
+
+			case 'both':
+			$this->imagick->flipImage();
+			$this->imagick->flopImage();
+			break;
+
+			default: return false;
+		}
 	}
 
 	protected function _border($size, $color = null)
@@ -172,7 +191,7 @@ class Image_Imagick extends \Image_Driver
 		);
 	}
 
-	public function save($filename, $permissions = null)
+	public function save($filename = null, $permissions = null)
 	{
 		extract(parent::save($filename, $permissions));
 
@@ -185,17 +204,17 @@ class Image_Imagick extends \Image_Driver
 		{
 			$filetype = 'jpeg';
 		}
-		
+
 		if ($this->imagick->getImageFormat() != $filetype)
 		{
 			$this->imagick->setImageFormat($filetype);
 		}
-		
+
 		if($this->imagick->getImageFormat() == 'jpeg' and $this->config['quality'] != 100)
 		{
-			$this->imagick->setImageCompression(\Imagick::COMPRESSION_JPEG); 
-			$this->imagick->setImageCompressionQuality($this->config['quality']); 
-			$this->imagick->stripImage(); 
+			$this->imagick->setImageCompression(\Imagick::COMPRESSION_JPEG);
+			$this->imagick->setImageCompressionQuality($this->config['quality']);
+			$this->imagick->stripImage();
 		}
 
 		file_put_contents($filename, $this->imagick->getImageBlob());
@@ -214,7 +233,7 @@ class Image_Imagick extends \Image_Driver
 
 		$this->run_queue();
 		$this->add_background();
-		
+
 		if ($filetype == 'jpg' or $filetype == 'jpeg')
 		{
 			$filetype = 'jpeg';
@@ -224,12 +243,12 @@ class Image_Imagick extends \Image_Driver
 		{
 			$this->imagick->setImageFormat($filetype);
 		}
-		
+
 		if($this->imagick->getImageFormat() == 'jpeg' and $this->config['quality'] != 100)
 		{
-			$this->imagick->setImageCompression(\Imagick::COMPRESSION_JPEG); 
-			$this->imagick->setImageCompressionQuality($this->config['quality']); 
-			$this->imagick->stripImage(); 
+			$this->imagick->setImageCompression(\Imagick::COMPRESSION_JPEG);
+			$this->imagick->setImageCompressionQuality($this->config['quality']);
+			$this->imagick->stripImage();
 		}
 
 		if ( ! $this->config['debug'])

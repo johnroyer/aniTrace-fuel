@@ -1,14 +1,13 @@
 <?php
 /**
- * Fuel is a fast, lightweight, community driven PHP5 framework.
+ * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.1
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
- *
  */
 
 namespace Fuel\Tasks;
@@ -80,6 +79,11 @@ class Session
             }
         }
 
+        if (\DBUtil::table_exists(\Config::get('session.db.table')))
+        {
+            return \Cli::write('Session table already exists.');
+        }
+
         // create the session table using the table name from the config file
         \DBUtil::create_table(\Config::get('session.db.table'), array(
             'session_id'   => array('constraint' => 40, 'type' => 'varchar'),
@@ -105,8 +109,6 @@ class Session
             return \Cli::color('Success! Your session table has been created! Your current session driver type is set to '.\Config::get('session.driver').'. In order to use the table you just created to manage your sessions, you will need to set your driver type to "db" in your session config file.', 'green');
         }
     }
-
-
 
     /**
      * remove the sessions table

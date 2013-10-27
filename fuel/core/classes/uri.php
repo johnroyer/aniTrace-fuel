@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -56,14 +56,65 @@ class Uri
 	}
 
 	/**
-	 * Converts the current URI segments to an associative array.  If
-	 * the URI has an odd number of segments, an exception will be thrown.
+	 * Replace all * wildcards in a URI by the current segment in that location
 	 *
-	 * @return  array|null  the array or null
+	 * @return  string
 	 */
-	public static function to_assoc()
+	public static function segment_replace($url)
 	{
-		return \Arr::to_assoc(static::segments());
+		// get the path from the url
+		$parts = parse_url($url);
+
+		// explode it in it's segments
+		$segments = explode('/', trim($parts['path'], '/'));
+
+		// fetch any segments needed
+		$wildcards = 0;
+		foreach ($segments as $index => &$segment)
+		{
+			if (strpos($segment, '*') !== false)
+			{
+				$wildcards++;
+				if (($new = static::segment($index+1)) === null)
+				{
+					throw new \OutofBoundsException('Segment replace on "'.$url.'" failed. No segment exists for wildcard '.$wildcards.'.');
+				}
+				$segment = str_replace('*', $new, $segment);
+			}
+		}
+
+		// re-assemble the path
+		$parts['path'] = '/'.implode('/', $segments);
+
+		// and rebuild the url with the new path
+		if (empty($parts['host']))
+		{
+			// if a relative url was given, fake a host so we can remove it after building
+			$url = substr(http_build_url('http://__removethis__/', $parts), 22);
+		}
+		else
+		{
+			// a hostname was present, just rebuild it
+			$url = http_build_url('', $parts);
+		}
+
+		// return the newly constructed url
+		return $url;
+	}
+
+	/**
+	 * Converts the current URI segments to an associative array.  If
+	 * the URI has an odd number of segments, an empty value will be added.
+	 *
+	 * @param  int  segment number to start from. default value is the first segment
+	 * @return  array  the assoc array
+	 */
+	public static function to_assoc($start = 1)
+	{
+		$segments = array_slice(static::segments(), ($start - 1));
+		count($segments) % 2 and $segments[] = null;
+
+		return \Arr::to_assoc($segments);
 	}
 
 	/**
@@ -206,7 +257,15 @@ class Uri
 		is_object($uri) and $uri = null;
 
 		$this->uri = trim($uri ?: \Input::uri(), '/');
-		$this->segments = $this->uri === '' ? array() : explode('/', $this->uri);
+
+		if (empty($this->uri))
+		{
+			$this->segments = array();
+		}
+		else
+		{
+			$this->segments = explode('/', $this->uri);
+		}
 
 		if (\Fuel::$profiling)
 		{

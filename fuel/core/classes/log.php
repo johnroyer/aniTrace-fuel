@@ -1,38 +1,106 @@
 <?php
 /**
- * Part of the Fuel framework.
+ * Fuel is a fast, lightweight, community driven PHP5 framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
 namespace Fuel\Core;
 
 /**
- * Log Class
+ * Log core class facade for the Monolog composer package.
  *
- * @package		Fuel
- * @category	Logging
- * @author		Phil Sturgeon
- * @link		http://docs.fuelphp.com/classes/log.html
+ * This class will provide the interface between the Fuel v1.x class API
+ * and the Monolog package, in preparation for FuelPHP v2.0
  */
 class Log
 {
+	/**
+	 * container for the Monolog instance
+	 */
+	protected static $monolog = null;
 
+	/**
+	 * Copy of the Monolog log levels
+	 */
+	protected static $levels = array(
+		100 => 'DEBUG',
+		200 => 'INFO',
+		250 => 'NOTICE',
+		300 => 'WARNING',
+		400 => 'ERROR',
+		500 => 'CRITICAL',
+		550 => 'ALERT',
+		600 => 'EMERGENCY',
+	);
+
+	/**
+	 * Initialize the class
+	 */
 	public static function _init()
 	{
+		// load the file config
 		\Config::load('file', true);
 
-		// make sure the configured chmod values are octal
-		$chmod = \Config::get('file.chmod.folders', 0777);
-		is_string($chmod) and \Config::set('file.chmod.folders', octdec($chmod));
+		// make sure the log directories exist
+		try
+		{
+			// determine the name and location of the logfile
+			$rootpath = \Config::get('log_path').date('Y').'/';
+			$filepath = \Config::get('log_path').date('Y/m').'/';
+			$filename = $filepath.date('d').'.php';
 
-		$chmod = \Config::get('file.chmod.files', 0666);
-		is_string($chmod) and \Config::set('file.chmod.files', octdec($chmod));
+			// get the required folder permissions
+			$permission = \Config::get('file.chmod.folders', 0777);
+
+			if ( ! is_dir($rootpath))
+			{
+				mkdir($rootpath, 0777, true);
+				chmod($rootpath, $permission);
+			}
+			if ( ! is_dir($filepath))
+			{
+				mkdir($filepath, 0777, true);
+				chmod($filepath, $permission);
+			}
+
+			$handle = fopen($filename, 'a');
+		}
+		catch (\Exception $e)
+		{
+			\Config::set('log_threshold', \Fuel::L_NONE);
+			throw new \FuelException('Unable to create or write to the log file. Please check the permissions on '.\Config::get('log_path'));
+		}
+
+		if ( ! filesize($filename))
+		{
+			fwrite($handle, "<?php defined('COREPATH') or exit('No direct script access allowed'); ?>".PHP_EOL.PHP_EOL);
+			chmod($filename, \Config::get('file.chmod.files', 0666));
+		}
+		fclose($handle);
+
+		// create the monolog instance
+		static::$monolog = new \Monolog\Logger('fuelphp');
+
+		// create the streamhandler, and activate the handler
+		$stream = new \Monolog\Handler\StreamHandler($filename, \Monolog\Logger::DEBUG);
+		$formatter = new \Monolog\Formatter\LineFormatter("%level_name% - %datetime% --> %message%".PHP_EOL, "Y-m-d H:i:s");
+		$stream->setFormatter($formatter);
+		static::$monolog->pushHandler($stream);
+	}
+
+	/**
+	 * Return the monolog instance
+	 */
+	public static function instance()
+	{
+		// return the created instance
+		return static::$monolog;
 	}
 
 	/**
@@ -98,7 +166,7 @@ class Log
 	public static function write($level, $msg, $method = null)
 	{
 		// defined default error labels
-		static $labels = array(
+		static $oldlabels = array(
 			1  => 'Error',
 			2  => 'Warning',
 			3  => 'Debug',
@@ -117,74 +185,47 @@ class Log
 		// if it's not an array, assume it's an "up to" level
 		if ( ! is_array($loglabels))
 		{
-			$loglabels = array_keys(array_slice($labels, 0, $loglabels, true));
-		}
-
-		// if $level is string, it is custom level.
-		if (is_int($level))
-		{
-			// do we need to log the message with this level?
-			if ( ! in_array($level, $loglabels))
+			$a = array();
+			foreach (static::$levels as $l => $label)
 			{
-				return false;
+				$l >= $loglabels and $a[] = $l;
 			}
-	
-			// store the label for this level for future use
-			$level = $labels[$level];
+			$loglabels = $a;
 		}
 
 		// if profiling is active log the message to the profile
-		if (Config::get('profiling'))
+		if (\Config::get('profiling'))
 		{
 			\Console::log($method.' - '.$msg);
 		}
 
-		// and write it to the logfile
-		$filepath = \Config::get('log_path').date('Y/m').'/';
-
-		if ( ! is_dir($filepath))
+		// convert the level to monolog standards if needed
+		if (is_int($level) and isset($oldlabels[$level]))
 		{
-			$old = umask(0);
-
-			mkdir($filepath, \Config::get('file.chmod.folders', 0777), true);
-			umask($old);
+			$level = strtoupper($oldlabels[$level]);
+		}
+		if (is_string($level))
+		{
+			if ( ! $level = array_search($level, static::$levels))
+			{
+				$level = 250;	// can't map it, convert it to a NOTICE
+			}
 		}
 
-		$filename = $filepath.date('d').'.php';
-
-		$message  = '';
-
-		if ( ! $exists = file_exists($filename))
+		// make sure $level has the correct value
+		if ((is_int($level) and ! isset(static::$levels[$level])) or (is_string($level) and ! array_search(strtoupper($level), static::$levels)))
 		{
-			$message .= "<"."?php defined('COREPATH') or exit('No direct script access allowed'); ?".">".PHP_EOL.PHP_EOL;
+			throw new \FuelException('Invalid level "'.$level.'" passed to logger()');
 		}
 
-		if ( ! $fp = @fopen($filename, 'a'))
+		// do we need to log the message with this level?
+		if ( ! in_array($level, $loglabels))
 		{
 			return false;
 		}
 
-		$call = '';
-		if ( ! empty($method))
-		{
-			$call .= $method;
-		}
-
-		$message .= $level.' '.(($level == 'info') ? ' -' : '-').' ';
-		$message .= date(\Config::get('log_date_format'));
-		$message .= ' --> '.(empty($call) ? '' : $call.' - ').$msg.PHP_EOL;
-
-		flock($fp, LOCK_EX);
-		fwrite($fp, $message);
-		flock($fp, LOCK_UN);
-		fclose($fp);
-
-		if ( ! $exists)
-		{
-			$old = umask(0);
-			@chmod($filename, \Config::get('file.chmod.files', 0666));
-			umask($old);
-		}
+		// log the message
+		static::$monolog->log($level, (empty($method) ? '' : $method.' - ').$msg);
 
 		return true;
 	}

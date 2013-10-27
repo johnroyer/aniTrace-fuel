@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -123,11 +123,19 @@ class Inflector
 	 * Gets the plural version of the given word
 	 *
 	 * @param   string  the word to pluralize
+	 * @param   int     number of instances
 	 * @return  string  the plural version of $word
 	 */
-	public static function pluralize($word)
+	public static function pluralize($word, $count = 0)
 	{
 		$result = strval($word);
+
+		// If a counter is provided, and that equals 1
+		// return as singular.
+		if ($count === 1)
+		{
+			return $result;
+		}
 
 		if ( ! static::is_countable($result))
 		{
@@ -200,10 +208,11 @@ class Inflector
 	 * Translate string to 7-bit ASCII
 	 * Only works with UTF-8.
 	 *
-	 * @param   string
-	 * @return  string
+	 * @param   string  $str              string to translate
+	 * @param   bool    $allow_non_ascii  wether to remove non ascii
+	 * @return  string                    translated string
 	 */
-	public static function ascii($str)
+	public static function ascii($str, $allow_non_ascii = false)
 	{
 		// Translate unicode characters to their simpler counterparts
 		\Config::load('ascii', true);
@@ -211,19 +220,25 @@ class Inflector
 
 		$str = preg_replace(array_keys($foreign_characters), array_values($foreign_characters), $str);
 
-		// remove any left over non 7bit ASCII
-		return preg_replace('/[^\x09\x0A\x0D\x20-\x7E]/', '', $str);
+		if ( ! $allow_non_ascii)
+		{
+			return preg_replace('/[^\x09\x0A\x0D\x20-\x7E]/', '', $str);
+		}
+
+		return $str;
 	}
 
 	/**
 	 * Converts your text to a URL-friendly title so it can be used in the URL.
 	 * Only works with UTF8 input and and only outputs 7 bit ASCII characters.
 	 *
-	 * @param   string  the text
-	 * @param   string  the separator (either - or _)
-	 * @return  string  the new title
+	 * @param   string  $str              the text
+	 * @param   string  $sep              the separator (either - or _)
+	 * @param   bool    $lowercase        wether to convert to lowercase
+	 * @param   bool    $allow_non_ascii  wether to allow non ascii
+	 * @return  string                    the new title
 	 */
-	public static function friendly_title($str, $sep = '-', $lowercase = false)
+	public static function friendly_title($str, $sep = '-', $lowercase = false, $allow_non_ascii = false)
 	{
 		// Allow underscore, otherwise default to dash
 		$sep = $sep === '_' ? '_' : '-';
@@ -234,15 +249,27 @@ class Inflector
 		// Decode all entities to their simpler forms
 		$str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
 
+		// Replace apostrophes.
+		$str = preg_replace("#[\’]#", '-', $str);
+
 		// Remove all quotes.
 		$str = preg_replace("#[\"\']#", '', $str);
 
 		// Only allow 7bit characters
-		$str = static::ascii($str);
+		$str = static::ascii($str, $allow_non_ascii);
 
-		// Strip unwanted characters
-		$str = preg_replace("#[^a-z0-9]#i", $sep, $str);
-		$str = preg_replace("#[/_|+ -]+#", $sep, $str);
+		if ($allow_non_ascii)
+		{
+			// Strip regular special chars.
+			$str = preg_replace("#[\.;:'\"\]\}\[\{\+\)\(\*&\^\$\#@\!±`%~']#iu", '', $str);
+		}
+		else
+		{
+			// Strip unwanted characters
+			$str = preg_replace("#[^a-z0-9]#i", $sep, $str);
+		}
+
+		$str = preg_replace("#[/_|+ -]+#u", $sep, $str);
 		$str = trim($str, $sep);
 
 		if ($lowercase === true)

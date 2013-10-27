@@ -1,4 +1,23 @@
 <?php
+/**
+ * Part of the Fuel framework.
+ *
+ * @package    Fuel
+ * @version    1.6
+ * @author     Fuel Development Team
+ * @license    MIT License
+ * @copyright  2010 - 2013 Fuel Development Team
+ * @link       http://fuelphp.com
+ */
+
+/**
+ * NOTICE:
+ *
+ * If you need to make modifications to the default configuration, copy
+ * this file to your app/config folder, and make them in there.
+ *
+ * This will allow you to upgrade fuel without losing your custom config.
+ */
 
 return array(
 	/**
@@ -40,4 +59,13 @@ return array(
 	 * The theme info file name
 	 */
 	'info_file_name' => 'themeinfo.php',
+
+	/**
+	 * Auto prefixing for modules
+	 *
+	 * If true, the view to be loaded will be prefixed by the name of the current module (if any)
+	 * If a string, it will be prefixed too, allowing you to store all modules in a subfolder
+	 * if false, module prefixing is not used
+	 */
+	'use_modules' => false,
 );

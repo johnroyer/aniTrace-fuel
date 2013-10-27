@@ -54,7 +54,7 @@
 			<li>
 				<a href="#" onclick="javascript:fuel_toggle('backtrace_<?php echo $id; ?>');return false;"><?php echo \Fuel::clean_path($trace['file']).' @ line '.$trace['line']; ?></a>
 				<div id="backtrace_<?php echo $id; ?>" class="backtrace_block">
-<pre class="fuel_debug_source"><?php foreach ($debug_lines as $line_num => $line_content): ?>
+<pre class="fuel_debug_source"><?php foreach ((array) $debug_lines as $line_num => $line_content): ?>
 <span<?php echo ($line_num == $trace['line']) ? ' class="fuel_line fuel_current_line"' : ' class="fuel_line"'; ?>><span class="fuel_line_number"><?php echo str_pad($line_num, (strlen(count($debug_lines))), ' ', STR_PAD_LEFT); ?></span><span class="fuel_line_content"><?php echo $line_content . PHP_EOL; ?>
 </span></span><?php endforeach; ?></pre>
 				</div>
@@ -85,8 +85,13 @@
 <?php endif; ?>
 
 <?php if ( ! empty($contents)): ?>
-		<h2>Prior Contents (<a href="#" onclick="javascript:fuel_toggle('prior_contents');return false;">show</a>)</h2>
-		<pre id="prior_contents" class="fuel_debug_source" style="display: none;"><?php echo e($contents); ?></pre>
+	<h2>Prior Contents (<a href="#" onclick="javascript:fuel_toggle('prior_contents');return false;">show</a>)</h2>
+	<?php if (\Config::get('errors.render_prior', false) == true): ?>
+		<div id="prior_contents" class="fuel_debug_source" style="display: none;"><?php echo $contents ?></div>
+	<?php endif; ?>
+	<?php if (\Config::get('errors.render_prior', false) == false): ?>
+		<pre id="prior_contents" class="fuel_debug_source" style="display: none;"><?php echo e($contents) ?></pre>
+	<?php endif; ?>
 <?php endif; ?>
 
 		<p class="footer">

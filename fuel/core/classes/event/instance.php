@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -100,9 +100,9 @@ class Event_Instance
 	{
 		if (isset($this->_events[$event]))
 		{
-			if ($callback === true)
+			if ($callback === null)
 			{
-				$this->_events = array();
+				unset($this->_events[$event]);
 				return true;
 			}
 

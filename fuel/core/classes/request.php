@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -354,11 +354,19 @@ class Request
 			throw new \HttpNotFoundException();
 		}
 
+		// save the current language so we can restore it after the call
+		$current_language = \Config::get('language', 'en');
+
 		try
 		{
 			if ($this->route->callable !== null)
 			{
 				$response = call_user_func_array($this->route->callable, array($this));
+
+				if ( ! $response instanceof Response)
+				{
+					$response = new \Response($response);
+				}
 			}
 			else
 			{
@@ -429,16 +437,22 @@ class Request
 					throw new \HttpNotFoundException();
 				}
 			}
+
+			// restore the language setting
+			\Config::set('language', $current_language);
 		}
 		catch (\Exception $e)
 		{
 			static::reset_request();
+
+			// restore the language setting
+			\Config::set('language', $current_language);
+
 			throw $e;
 		}
 
-
 		// Get the controller's output
-		if ($response instanceof \Response)
+		if ($response instanceof Response)
 		{
 			$this->response = $response;
 		}

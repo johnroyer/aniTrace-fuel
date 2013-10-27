@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -70,7 +70,14 @@ class File
 			return $area;
 		}
 
-		return array_key_exists($area, static::$areas) ? static::$areas[$area] : false;
+		$instance = array_key_exists($area, static::$areas) ? static::$areas[$area] : false;
+
+		if ($instance === false)
+		{
+			throw new \InvalidArgumentException('There is no file instance named "'.$area.'".');
+		}
+
+		return $instance;
 	}
 
 	/**
@@ -137,21 +144,45 @@ class File
 	public static function create_dir($basepath, $name, $chmod = null, $area = null)
 	{
 		$basepath	= rtrim(static::instance($area)->get_path($basepath), '\\/').DS;
-		$new_dir	= static::instance($area)->get_path($basepath.$name);
+		$new_dir	= static::instance($area)->get_path($basepath.trim($name,'\\/'));
 		is_null($chmod) and $chmod = \Config::get('file.chmod.folders', 0777);
 
 		if ( ! is_dir($basepath) or ! is_writable($basepath))
 		{
 			throw new \InvalidPathException('Invalid basepath: "'.$basepath.'", cannot create directory at this location.');
 		}
-		elseif (file_exists($new_dir))
+		elseif (is_dir($new_dir))
 		{
 			throw new \FileAccessException('Directory: "'.$new_dir.'" exists already, cannot be created.');
 		}
 
-		$recursive = (strpos($name, '/') !== false or strpos($name, '\\') !== false);
+		// unify the path separators, and get the part we need to add to the basepath
+		$new_dir = substr(str_replace(array('\\', '/'), DS, $new_dir), strlen($basepath));
 
-		return mkdir($new_dir, $chmod, $recursive);
+		// recursively create the directory. we can't use mkdir permissions or recursive
+		// due to the fact that mkdir is restricted by the current users umask
+		$basepath = rtrim($basepath, DS);
+		foreach (explode(DS, $new_dir) as $dir)
+		{
+			$basepath .= DS.$dir;
+			if ( ! is_dir($basepath))
+			{
+				try
+				{
+					if ( ! mkdir($basepath))
+					{
+						return false;
+					}
+					chmod($basepath, $chmod);
+				}
+				catch (\PHPErrorException $e)
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -307,7 +338,7 @@ class File
 		$basepath  = rtrim(static::instance($area)->get_path($basepath), '\\/').DS;
 		$new_file  = static::instance($area)->get_path($basepath.$name);
 
-		if ( ! $file = static::open_file(@fopen($new_file, 'w'), true, $area) )
+		if ( ! $file = static::open_file(@fopen($new_file, 'w'), true, $area))
 		{
 			if ( ! is_dir($basepath) or ! is_writable($basepath))
 			{
@@ -432,13 +463,14 @@ class File
 	 *
 	 * @param   string  path to file or directory to rename
 	 * @param   string  new path (full path, can also cause move)
-	 * @param   string|File_Area|null  file area name, object or null for non-specific
+	 * @param   string|File_Area|null  source path file area name, object or null for non-specific
+	 * @param   string|File_Area|null  target path file area name, object or null for non-specific. Defaults to source_area if not set.
 	 * @return  bool
 	 */
-	public static function rename($path, $new_path, $area = null)
+	public static function rename($path, $new_path, $source_area = null, $target_area = null)
 	{
-		$path = static::instance($area)->get_path($path);
-		$new_path = static::instance($area)->get_path($new_path);
+		$path = static::instance($source_area)->get_path($path);
+		$new_path = static::instance($target_area ?: $source_area)->get_path($new_path);
 
 		return rename($path, $new_path);
 	}
@@ -446,9 +478,9 @@ class File
 	/**
 	 * Alias for rename(), not needed but consistent with other methods
 	 */
-	public static function rename_dir($path, $new_path, $area = null)
+	public static function rename_dir($path, $new_path, $source_area = null, $target_area = null)
 	{
-		return static::rename($path, $new_path, $area);
+		return static::rename($path, $new_path, $source_area, $target_area);
 	}
 
 	/**
@@ -456,13 +488,14 @@ class File
 	 *
 	 * @param   string  path to file to copy
 	 * @param   string  new base directory (full path)
-	 * @param   string|File_Area|null  file area name, object or null for non-specific
+	 * @param   string|File_Area|null  source path file area name, object or null for non-specific
+	 * @param   string|File_Area|null  target path file area name, object or null for non-specific. Defaults to source_area if not set.
 	 * @return  bool
 	 */
-	public static function copy($path, $new_path, $area = null)
+	public static function copy($path, $new_path, $source_area = null, $target_area = null)
 	{
-		$path      = static::instance($area)->get_path($path);
-		$new_path  = static::instance($area)->get_path($new_path);
+		$path      = static::instance($source_area)->get_path($path);
+		$new_path  = static::instance($target_area ?: $source_area)->get_path($new_path);
 
 		if ( ! is_file($path))
 		{
@@ -480,14 +513,17 @@ class File
 	 *
 	 * @param   string  path to directory which contents will be copied
 	 * @param   string  new base directory (full path)
-	 * @param   string|File_Area|null  file area name, object or null for non-specific
+	 * @param   string|File_Area|null  source path file area name, object or null for non-specific
+	 * @param   string|File_Area|null  target path file area name, object or null for non-specific. Defaults to source_area if not set.
 	 * @return  bool
 	 * @throws  FileAccessException  when something went wrong
 	 */
-	public static function copy_dir($path, $new_path, $area = null)
+	public static function copy_dir($path, $new_path, $source_area = null, $target_area = null)
 	{
-		$path      = rtrim(static::instance($area)->get_path($path), '\\/').DS;
-		$new_path  = rtrim(static::instance($area)->get_path($new_path), '\\/').DS;
+		$target_area = $target_area ?: $source_area;
+
+		$path      = rtrim(static::instance($source_area)->get_path($path), '\\/').DS;
+		$new_path  = rtrim(static::instance($target_area)->get_path($new_path), '\\/').DS;
 
 		if ( ! is_dir($path))
 		{
@@ -496,20 +532,20 @@ class File
 		elseif ( ! file_exists($new_path))
 		{
 			$newpath_dirname = pathinfo($new_path, PATHINFO_DIRNAME);
-			static::create_dir($newpath_dirname, pathinfo($new_path, PATHINFO_BASENAME), fileperms($newpath_dirname) ?: 0777, $area);
+			static::create_dir($newpath_dirname, pathinfo($new_path, PATHINFO_BASENAME), fileperms($newpath_dirname) ?: 0777, $target_area);
 		}
 
-		$files = static::read_dir($path, -1, array(), $area);
+		$files = static::read_dir($path, -1, array(), $source_area);
 		foreach ($files as $dir => $file)
 		{
 			if (is_array($file))
 			{
-				$check = static::create_dir($new_path.DS, substr($dir, 0, -1), fileperms($path.$dir) ?: 0777, $area);
-				$check and static::copy_dir($path.$dir.DS, $new_path.$dir, $area);
+				$check = static::create_dir($new_path.DS, substr($dir, 0, -1), fileperms($path.$dir) ?: 0777, $target_area);
+				$check and static::copy_dir($path.$dir.DS, $new_path.$dir, $source_area, $target_area);
 			}
 			else
 			{
-				$check = static::copy($path.$file, $new_path.$file, $area);
+				$check = static::copy($path.$file, $new_path.$file, $source_area, $target_area);
 			}
 
 			// abort if something went wrong

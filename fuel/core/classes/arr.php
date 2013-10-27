@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -413,6 +413,26 @@ class Arr
 	}
 
 	/**
+	 * Recursive version of PHP's array_filter()
+	 *
+	 * @param   array   the array to filter.
+	 * @param   callback   the callback that determines whether or not a value is filtered
+	 * @return  array
+	 */
+	public static function filter_recursive($array, $callback = null)
+	{
+		foreach ($array as &$value)
+		{
+			if (is_array($value))
+			{
+				$value = $callback === null ? static::filter_recursive($value) : static::filter_recursive($value, $callback);
+			}
+		}
+
+		return $callback === null ? array_filter($array) : array_filter($array, $callback);
+   	}
+
+	/**
 	 * Removes items from an array that match a key prefix.
 	 *
 	 * @param   array   the array to remove from
@@ -424,6 +444,50 @@ class Arr
 		foreach ($array as $key => $val)
 		{
 			if (preg_match('/^'.$prefix.'/', $key))
+			{
+				unset($array[$key]);
+			}
+		}
+		return $array;
+	}
+
+	/**
+	 * Filters an array on suffixed associative keys.
+	 *
+	 * @param   array   the array to filter.
+	 * @param   string  suffix to filter on.
+	 * @param   bool    whether to remove the suffix.
+	 * @return  array
+	 */
+	public static function filter_suffixed($array, $suffix, $remove_suffix = true)
+	{
+		$return = array();
+		foreach ($array as $key => $val)
+		{
+			if (preg_match('/'.$suffix.'$/', $key))
+			{
+				if ($remove_suffix === true)
+				{
+					$key = preg_replace('/'.$suffix.'$/','',$key);
+				}
+				$return[$key] = $val;
+			}
+		}
+		return $return;
+	}
+
+	/**
+	 * Removes items from an array that match a key suffix.
+	 *
+	 * @param   array   the array to remove from
+	 * @param   string  suffix to filter on
+	 * @return  array
+	 */
+	public static function remove_suffixed($array, $suffix)
+	{
+		foreach ($array as $key => $val)
+		{
+			if (preg_match('/'.$suffix.'$/', $key))
 			{
 				unset($array[$key]);
 			}
@@ -828,5 +892,257 @@ class Arr
 	{
 		$values = array_filter($arr, 'is_array');
 		return $all_keys ? count($arr) === count($values) : count($values) > 0;
+	}
+
+	/**
+	 * Searches the array for a given value and returns the
+	 * corresponding key or default value.
+	 * If $recursive is set to true, then the Arr::search()
+	 * function will return a delimiter-notated key using $delimiter.
+	 *
+	 * @param   array   $array     The search array
+	 * @param   mixed   $value     The searched value
+	 * @param   string  $default   The default value
+	 * @param   bool    $recursive Whether to get keys recursive
+	 * @param   string  $delimiter The delimiter, when $recursive is true
+	 * @return  mixed
+	 */
+	public static function search($array, $value, $default = null, $recursive = true, $delimiter = '.')
+	{
+		if ( ! is_array($array) and ! $array instanceof \ArrayAccess)
+		{
+			throw new \InvalidArgumentException('First parameter must be an array or ArrayAccess object.');
+		}
+
+		if ( ! is_null($default) and ! is_int($default) and ! is_string($default))
+		{
+			throw new \InvalidArgumentException('Expects parameter 3 to be an string or integer or null.');
+		}
+
+		if ( ! is_string($delimiter))
+		{
+			throw new \InvalidArgumentException('Expects parameter 5 must be an string.');
+		}
+
+		$key = array_search($value, $array);
+
+		if ($recursive and $key === false)
+		{
+			$keys = array();
+			foreach ($array as $k => $v)
+			{
+				if (is_array($v))
+				{
+					$rk = static::search($v, $value, $default, true, $delimiter);
+					if ($rk !== $default)
+					{
+						$keys = array($k, $rk);
+						break;
+					}
+				}
+			}
+			$key = count($keys) ? implode($delimiter, $keys) : false;
+		}
+
+		return $key === false ? $default : $key;
+	}
+
+	/**
+	 * Returns only unique values in an array. It does not sort. First value is used.
+	 *
+	 * @param   array  $arr       the array to dedup
+	 * @return  array   array with only de-duped values
+	 */
+	public static function unique($arr)
+	{
+		// filter out all duplicate values
+		return array_filter($arr, function($item)
+		{
+			// contrary to popular belief, this is not as static as you think...
+			static $vars = array();
+
+			if (in_array($item, $vars, true))
+			{
+				// duplicate
+				return false;
+			}
+			else
+			{
+				// record we've had this value
+				$vars[] = $item;
+
+				// unique
+				return true;
+			}
+		});
+	}
+
+	/**
+	 * Calculate the sum of an array
+	 *
+	 * @param   array    $array  the array containing the values
+	 * @param   string   $key    key of the value to pluck
+	 * @return  numeric  the sum value
+	 */
+	public static function sum($array, $key)
+	{
+		if ( ! is_array($array) and ! $array instanceof \ArrayAccess)
+		{
+			throw new \InvalidArgumentException('First parameter must be an array or ArrayAccess object.');
+		}
+
+		return array_sum(static::pluck($array, $key));
+	}
+
+	/**
+	 * Get the previous value or key from an array using the current array key
+	 *
+	 * @param   array    $array  the array containing the values
+	 * @param   string   $key    key of the current entry to use as reference
+	 * @param   bool     $key    if true, return the previous value instead of the previous key
+	 * @param   bool     $key    if true, do a strict key comparison
+	 *
+	 * @return  mixed  the value in the array, null if there is no previous value, or false if the key doesn't exist
+	 */
+	public static function previous_by_key($array, $key, $get_value = false, $strict = false)
+	{
+		if ( ! is_array($array) and ! $array instanceof \ArrayAccess)
+		{
+			throw new \InvalidArgumentException('First parameter must be an array or ArrayAccess object.');
+		}
+
+		// get the keys of the array
+		$keys = array_keys($array);
+
+		// and do a lookup of the key passed
+		if (($index = array_search($key, $keys, $strict)) === false)
+		{
+			// key does not exist
+			return false;
+		}
+
+		// check if we have a previous key
+		elseif ( ! isset($keys[$index-1]))
+		{
+			// there is none
+			return null;
+		}
+
+		// return the value or the key of the array entry the previous key points to
+		return $get_value ? $array[$keys[$index-1]] : $keys[$index-1];
+	}
+
+	/**
+	 * Get the next value or key from an array using the current array key
+	 *
+	 * @param   array    $array  the array containing the values
+	 * @param   string   $key    key of the current entry to use as reference
+	 * @param   bool     $key    if true, return the next value instead of the next key
+	 * @param   bool     $key    if true, do a strict key comparison
+	 *
+	 * @return  mixed  the value in the array, null if there is no next value, or false if the key doesn't exist
+	 */
+	public static function next_by_key($array, $key, $get_value = false, $strict = false)
+	{
+		if ( ! is_array($array) and ! $array instanceof \ArrayAccess)
+		{
+			throw new \InvalidArgumentException('First parameter must be an array or ArrayAccess object.');
+		}
+
+		// get the keys of the array
+		$keys = array_keys($array);
+
+		// and do a lookup of the key passed
+		if (($index = array_search($key, $keys, $strict)) === false)
+		{
+			// key does not exist
+			return false;
+		}
+
+		// check if we have a previous key
+		elseif ( ! isset($keys[$index+1]))
+		{
+			// there is none
+			return null;
+		}
+
+		// return the value or the key of the array entry the previous key points to
+		return $get_value ? $array[$keys[$index+1]] : $keys[$index+1];
+	}
+
+	/**
+	 * Get the previous value or key from an array using the current array value
+	 *
+	 * @param   array    $array  the array containing the values
+	 * @param   string   $value  value of the current entry to use as reference
+	 * @param   bool     $key    if true, return the previous value instead of the previous key
+	 * @param   bool     $key    if true, do a strict key comparison
+	 *
+	 * @return  mixed  the value in the array, null if there is no previous value, or false if the key doesn't exist
+	 */
+	public static function previous_by_value($array, $value, $get_value = true, $strict = false)
+	{
+		if ( ! is_array($array) and ! $array instanceof \ArrayAccess)
+		{
+			throw new \InvalidArgumentException('First parameter must be an array or ArrayAccess object.');
+		}
+
+		// find the current value in the array
+		if (($key = array_search($value, $array, $strict)) === false)
+		{
+			// bail out if not found
+			return false;
+		}
+
+		// get the list of keys, and find our found key
+		$keys = array_keys($array);
+		$index = array_search($key, $keys);
+
+		// if there is no previous one, bail out
+		if ( ! isset($keys[$index-1]))
+		{
+			return null;
+		}
+
+		// return the value or the key of the array entry the previous key points to
+		return $get_value ? $array[$keys[$index-1]] : $keys[$index-1];
+	}
+
+	/**
+	 * Get the next value or key from an array using the current array value
+	 *
+	 * @param   array    $array  the array containing the values
+	 * @param   string   $value  value of the current entry to use as reference
+	 * @param   bool     $key    if true, return the next value instead of the next key
+	 * @param   bool     $key    if true, do a strict key comparison
+	 *
+	 * @return  mixed  the value in the array, null if there is no next value, or false if the key doesn't exist
+	 */
+	public static function next_by_value($array, $value, $get_value = true, $strict = false)
+	{
+		if ( ! is_array($array) and ! $array instanceof \ArrayAccess)
+		{
+			throw new \InvalidArgumentException('First parameter must be an array or ArrayAccess object.');
+		}
+
+		// find the current value in the array
+		if (($key = array_search($value, $array, $strict)) === false)
+		{
+			// bail out if not found
+			return false;
+		}
+
+		// get the list of keys, and find our found key
+		$keys = array_keys($array);
+		$index = array_search($key, $keys);
+
+		// if there is no next one, bail out
+		if ( ! isset($keys[$index+1]))
+		{
+			return null;
+		}
+
+		// return the value or the key of the array entry the next key points to
+		return $get_value ? $array[$keys[$index+1]] : $keys[$index+1];
 	}
 }

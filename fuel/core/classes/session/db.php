@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -61,14 +61,8 @@ class Session_Db extends \Session_Driver
 		$this->keys['created'] 		= $this->time->get_timestamp();
 		$this->keys['updated'] 		= $this->keys['created'];
 
-		// set the session cookie
-		$this->_set_cookie();
-
 		// add the payload
 		$this->keys['payload'] = $payload;
-
-		// create the session record
-		$result = \DB::insert($this->config['table'], array_keys($this->keys))->values($this->keys)->execute($this->config['database']);
 
 		return $this;
 	}
@@ -84,46 +78,67 @@ class Session_Db extends \Session_Driver
 	 */
 	public function read($force = false)
 	{
+		// initialize the session
+		$this->data = array();
+		$this->keys = array();
+		$this->flash = array();
+		$this->record = null;
+
 		// get the session cookie
 		$cookie = $this->_get_cookie();
 
-		// if no session cookie was present, initialize a new session
-		if ($cookie === false or $force)
+		// if a cookie was present, find the session record
+		if ($cookie and ! $force and isset($cookie[0]))
 		{
-			$this->data = array();
-			$this->keys = array();
-			return $this;
-		}
-
-		// read the session record
-		$this->record = \DB::select()->where('session_id', '=', $this->keys['session_id'])->from($this->config['table'])->execute($this->config['database']);
-
-		// record found?
-		if ($this->record->count())
-		{
-			$payload = $this->_unserialize($this->record->get('payload'));
-		}
-		else
-		{
-			// try to find the session on previous id
-			$this->record = \DB::select()->where('previous_id', '=', $this->keys['session_id'])->from($this->config['table'])->execute($this->config['database']);
+			// read the session record
+			$this->record = \DB::select()->where('session_id', '=', $cookie[0])->from($this->config['table'])->execute($this->config['database']);
 
 			// record found?
 			if ($this->record->count())
 			{
-				// previous id used, correctly set session id so it wont be overwritten with previous id.
-				$this->keys['session_id'] = $this->record->get('session_id');
 				$payload = $this->_unserialize($this->record->get('payload'));
 			}
 			else
 			{
-				// cookie present, but session record missing. force creation of a new session
-				return $this->read(true);
+				// try to find the session on previous id
+				$this->record = \DB::select()->where('previous_id', '=', $cookie[0])->from($this->config['table'])->execute($this->config['database']);
+
+				// record found?
+				if ($this->record->count())
+				{
+					$payload = $this->_unserialize($this->record->get('payload'));
+				}
+				else
+				{
+					// cookie present, but session record missing. force creation of a new session
+					return $this->read(true);
+				}
+			}
+
+			if ( ! isset($payload[0]) or ! is_array($payload[0]))
+			{
+				// not a valid cookie payload
+			}
+			elseif ($payload[0]['updated'] + $this->config['expiration_time'] <= $this->time->get_timestamp())
+			{
+				// session has expired
+			}
+			elseif ($this->config['match_ip'] and $payload[0]['ip_hash'] !== md5(\Input::ip().\Input::real_ip()))
+			{
+				// IP address doesn't match
+			}
+			elseif ($this->config['match_ua'] and $payload[0]['user_agent'] !== \Input::user_agent())
+			{
+				// user agent doesn't match
+			}
+			else
+			{
+				// session is valid, retrieve the payload
+				if (isset($payload[0]) and is_array($payload[0])) $this->keys  = $payload[0];
+				if (isset($payload[1]) and is_array($payload[1])) $this->data  = $payload[1];
+				if (isset($payload[2]) and is_array($payload[2])) $this->flash = $payload[2];
 			}
 		}
-
-		if (isset($payload[0])) $this->data = $payload[0];
-		if (isset($payload[1])) $this->flash = $payload[1];
 
 		return parent::read();
 	}
@@ -143,34 +158,34 @@ class Session_Db extends \Session_Driver
 		{
 			parent::write();
 
+			// rotate the session id if needed
+			$this->rotate(false);
+
+			// create the session record, and add the session payload
+			$session = $this->keys;
+			$session['payload'] = $this->_serialize(array($this->keys, $this->data, $this->flash));
+
 			// do we need to create a new session?
-			if (is_null($this->record) or empty($this->keys))
+			if (is_null($this->record))
 			{
-				$payload = $this->_serialize(array($this->data, $this->flash));
-				$this->create($payload);
+				// create the new session record
+				$result = \DB::insert($this->config['table'], array_keys($session))->values($session)->execute($this->config['database']);
 			}
 			else
 			{
-				// rotate the session id if needed
-				$this->rotate(false);
-
-				// create the session record, and add the session payload
-				$session = $this->keys;
-				$session['payload'] = $this->_serialize(array($this->data, $this->flash));
-
 				// update the database
 				$result = \DB::update($this->config['table'])->set($session)->where('session_id', '=', $this->record->get('session_id'))->execute($this->config['database']);
+			}
 
-				// update went well?
-				if ($result !== false)
-				{
-					// then update the cookie
-					$this->_set_cookie();
-				}
-				else
-				{
-					logger(\Fuel::L_ERROR, 'Session update failed, session record could not be found. Concurrency issue?');
-				}
+			// update went well?
+			if ($result !== false)
+			{
+				// then update the cookie
+				$this->_set_cookie(array($this->keys['session_id']));
+			}
+			else
+			{
+				logger(\Fuel::L_ERROR, 'Session update failed, session record could not be found. Concurrency issue?');
 			}
 
 			// do some garbage collection
@@ -203,7 +218,8 @@ class Session_Db extends \Session_Driver
 
 		// reset the stored session data
 		$this->record = null;
-		$this->keys = $this->flash = $this->data = array();
+
+		parent::destroy();
 
 		return $this;
 	}
@@ -279,5 +295,3 @@ class Session_Db extends \Session_Driver
 	}
 
 }
-
-

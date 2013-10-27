@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -358,7 +358,7 @@ class Str
 
 	/**
 	 * Check if a string is json encoded
-	 * 
+	 *
 	 * @param  string $string string to check
 	 * @return bool
 	 */
@@ -369,8 +369,29 @@ class Str
 	}
 
 	/**
+	 * Check if a string is a valid XML
+	 *
+	 * @param  string $string string to check
+	 * @return bool
+	 */
+	public static function is_xml($string)
+	{
+		if ( ! defined('LIBXML_COMPACT'))
+		{
+			throw new \FuelException('libxml is required to use Str::is_xml()');
+		}
+
+		$internal_errors = libxml_use_internal_errors();
+		libxml_use_internal_errors(true);
+		$result = simplexml_load_string($string) !== false;
+		libxml_use_internal_errors($internal_errors);
+
+		return $result;
+	}
+
+	/**
 	 * Check if a string is serialized
-	 * 
+	 *
 	 * @param  string $string string to check
 	 * @return bool
 	 */
@@ -382,7 +403,7 @@ class Str
 
 	/**
 	 * Check if a string is html
-	 * 
+	 *
 	 * @param  string $string string to check
 	 * @return bool
 	 */

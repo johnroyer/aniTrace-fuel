@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -25,26 +25,57 @@ require COREPATH.'base.php';
 define('MBSTRING', function_exists('mb_get_info'));
 
 /**
+ * Load the Composer autoloader if present
+ */
+defined('VENDORPATH') or define('VENDORPATH', COREPATH.'..'.DS.'vendor'.DS);
+if ( ! file_exists(VENDORPATH.'autoload.php'))
+{
+	die('Composer is not installed. Please run "php composer.phar update" in the root to install Composer');
+}
+require VENDORPATH.'autoload.php';
+
+/**
  * Register all the error/shutdown handlers
  */
 register_shutdown_function(function ()
 {
-	// Fire off the shutdown events
-	Event::shutdown();
+	// reset the autoloader
+	\Autoloader::_reset();
 
-	load_error_classes();
+	// make sure we're having an output filter so we can display errors
+	// occuring before the main config file is loaded
+	\Config::get('security.output_filter', null) or \Config::set('security.output_filter', 'Security::htmlentities');
+
+	// Fire off the shutdown events
+	try
+	{
+		Event::shutdown();
+	}
+	catch (\Exception $e)
+	{
+		if (\Fuel::$is_cli)
+		{
+			\Cli::error("Error: ".$e->getMessage()." in ".$e->getFile()." on ".$e->getLine());
+			\Cli::beep();
+			exit(1);
+		}
+	}
 	return \Error::shutdown_handler();
 });
 
 set_exception_handler(function (\Exception $e)
 {
-	load_error_classes();
+	// reset the autoloader
+	\Autoloader::_reset();
+
 	return \Error::exception_handler($e);
 });
 
 set_error_handler(function ($severity, $message, $filepath, $line)
 {
-	load_error_classes();
+	// reset the autoloader
+	\Autoloader::_reset();
+
 	return \Error::error_handler($severity, $message, $filepath, $line);
 });
 
@@ -177,7 +208,7 @@ function setup_autoloader()
 		'Fuel\\Core\\Lang_Php'           => COREPATH.'classes/lang/php.php',
 		'Fuel\\Core\\Lang_Yml'           => COREPATH.'classes/lang/yml.php',
 
-		'Fuel\\Core\\Log'        => COREPATH.'classes/log.php',
+		'Fuel\\Core\\Log'                => COREPATH.'classes/log.php',
 
 		'Fuel\\Core\\Markdown'   => COREPATH.'classes/markdown.php',
 
@@ -216,7 +247,8 @@ function setup_autoloader()
 		'Fuel\\Core\\Route'     => COREPATH.'classes/route.php',
 		'Fuel\\Core\\Router'    => COREPATH.'classes/router.php',
 
-		'Fuel\\Core\\Security'  => COREPATH.'classes/security.php',
+		'Fuel\\Core\\Security'           => COREPATH.'classes/security.php',
+		'Fuel\\Core\\SecurityException'  => COREPATH.'classes/security.php',
 
 		'Fuel\\Core\\Session'            => COREPATH.'classes/session.php',
 		'Fuel\\Core\\Session_Driver'     => COREPATH.'classes/session/driver.php',

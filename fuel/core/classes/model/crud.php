@@ -3,16 +3,17 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
 namespace Fuel\Core;
 
-class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
+class Model_Crud extends \Model implements \Iterator, \ArrayAccess, \Serializable
+{
 
 	/**
 	 * @var  string  $_table_name  The table name (must set this in your Model)
@@ -30,6 +31,11 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 	// protected static $_connection = null;
 
 	/**
+	 * @var string   $_write_connection   The database connection to use for writes
+	 */
+	// protected static $_write_connection = null;
+
+	/**
 	 * @var  array  $_rules  The validation rules (must set this in your Model to use)
 	 */
 	// protected static $_rules = array();
@@ -38,6 +44,16 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 	 * @var  array  $_properties  The table column names (must set this in your Model to use)
 	 */
 	// protected static $_properties = array();
+
+	/**
+	 * @var  array  $_mass_whitelist  The table column names which will be set while using mass assignment like ->set($data)
+	 */
+	// protected static $_mass_whitelist = array();
+
+	/**
+	 * @var  array  $_mass_blacklist  The table column names which will not be set while using mass assignment like ->set($data)
+	 */
+	// protected static $_mass_blacklist = array();
 
 	/**
 	 * @var array  $_labels  Field labels (must set this in your Model to use)
@@ -223,7 +239,7 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 
 		static::pre_find($query);
 
-		$result =  $query->execute(isset(static::$_connection) ? static::$_connection : null);
+		$result =  $query->execute(static::get_connection());
 		$result = ($result->count() === 0) ? null : $result->as_array($key);
 
 		return static::post_find($result);
@@ -243,7 +259,7 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 		$select = $column ?: static::primary_key();
 
 		// Get the database group / connection
-		$connection = isset(static::$_connection) ? static::$_connection : null;
+		$connection = static::get_connection();
 
 		// Get the columns
 		$columns = \DB::expr('COUNT('.($distinct ? 'DISTINCT ' : '').
@@ -308,6 +324,22 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 			return static::find_one_by(substr($name, 12), reset($args));
 		}
 		throw new \BadMethodCallException('Method "'.$name.'" does not exist.');
+	}
+
+	/**
+	 * Get the connection to use for reading or writing
+	 *
+	 * @param  boolean  $writeable Get a writeable connection
+	 * @return Database_Connection
+	 */
+	protected static function get_connection($writeable = false)
+	{
+		if ($writeable and isset(static::$_write_connection))
+		{
+			return static::$_write_connection;
+		}
+
+		return isset(static::$_connection) ? static::$_connection : null;
 	}
 
 	/**
@@ -399,7 +431,19 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 	{
 		foreach ($data as $key => $value)
 		{
-			$this->{$key} = $value;
+			if (isset(static::$_mass_whitelist))
+			{
+				in_array($key, static::$_mass_whitelist) and $this->{$key} = $value;
+			}
+			elseif (isset(static::$_mass_blacklist))
+			{
+				( ! in_array($key, static::$_mass_blacklist)) and $this->{$key} = $value;
+			}
+			else
+			{
+				// no static::$_mass_whitelist or static::$_mass_blacklist set, proceed with default behavior
+				$this->{$key} = $value;
+			}
 		}
 		return $this;
 	}
@@ -423,7 +467,7 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 		// Set default if there are any
 		isset(static::$_defaults) and $vars = $vars + static::$_defaults;
 
-		if ($validate and isset(static::$_rules) and count(static::$_rules) > 0)
+		if ($validate and isset(static::$_rules) and ! empty(static::$_rules))
 		{
 			$vars = $this->pre_validate($vars);
 			$validated = $this->post_validate($this->run_validation($vars));
@@ -433,6 +477,7 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 				$validated = array_filter($this->validation()->validated(), function($val){
 					return ($val !== null);
 				});
+
 				$vars = $validated + $vars;
 			}
 			else
@@ -478,7 +523,7 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 			            ->set($vars);
 
 			$this->pre_save($query);
-			$result = $query->execute(isset(static::$_connection) ? static::$_connection : null);
+			$result = $query->execute(static::get_connection(true));
 
 			if ($result[1] > 0)
 			{
@@ -500,7 +545,7 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 		         ->where(static::primary_key(), '=', $this->{static::primary_key()});
 
 		$this->pre_update($query);
-		$result = $query->execute(isset(static::$_connection) ? static::$_connection : null);
+		$result = $query->execute(static::get_connection(true));
 		$result > 0 and $this->set($vars);
 
 		return $this->post_update($result);
@@ -518,7 +563,7 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 		            ->where(static::primary_key(), '=', $this->{static::primary_key()});
 
 		$this->pre_delete($query);
-		$result = $query->execute(isset(static::$_connection) ? static::$_connection : null);
+		$result = $query->execute(static::get_connection(true));
 
 		return $this->post_delete($result);
 	}
@@ -809,4 +854,33 @@ class Model_Crud extends \Model implements \Iterator, \ArrayAccess {
 		return $values;
 	}
 
+	/**
+	 * Serializable implementation: serialize
+	 *
+	 * @return  array  model data
+	 */
+	public function serialize()
+	{
+		$data = $this->to_array();
+
+		$data['_is_new'] = $this->_is_new;
+		$data['_is_frozen'] = $this->_is_frozen;
+
+		return serialize($data);
+	}
+
+	/**
+	 * Serializable implementation: unserialize
+	 *
+	 * @return  array  model data
+	 */
+	public function unserialize($data)
+	{
+		$data = unserialize($data);
+
+		foreach ($data as $key => $value)
+		{
+			$this->__set($key, $value);
+		}
+	}
 }

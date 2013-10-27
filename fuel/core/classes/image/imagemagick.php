@@ -1,15 +1,13 @@
 <?php
-
 /**
  * Part of the Fuel framework.
  *
- * Image manipulation class.
- *
- * @package		Fuel
- * @version		1.0
- * @license		MIT License
- * @copyright	2010 - 2011 Fuel Development Team
- * @link		http://fuelphp.com
+ * @package    Fuel
+ * @version    1.6
+ * @author     Fuel Development Team
+ * @license    MIT License
+ * @copyright  2010 - 2013 Fuel Development Team
+ * @link       http://fuelphp.com
  */
 
 namespace Fuel\Core;
@@ -22,9 +20,9 @@ class Image_Imagemagick extends \Image_Driver
 	protected $size_cache = null;
 	protected $im_path = null;
 
-	public function load($filename, $return_data = false)
+	public function load($filename, $return_data = false, $force_extension = false)
 	{
-		extract(parent::load($filename));
+		extract(parent::load($filename, $return_data, $force_extension));
 
 		$this->clear_sizes();
 		if (empty($this->image_temp))
@@ -85,6 +83,28 @@ class Image_Imagemagick extends \Image_Driver
 		$this->clear_sizes();
 	}
 
+	protected function _flip($direction)
+	{
+		switch ($direction)
+		{
+			case 'vertical':
+			$arg = '-flip';
+			break;
+
+			case 'horizontal':
+			$arg = '-flop';
+			break;
+
+			case 'both':
+			$arg = '-flip -flop';
+			break;
+
+			default: return false;
+		}
+		$image = '"'.$this->image_temp.'"';
+		$this->exec('convert', $image.' '.$arg.' '.$image);
+	}
+
 	protected function _watermark($filename, $position, $padding = 5)
 	{
 		$values = parent::_watermark($filename, $position, $padding);
@@ -97,6 +117,7 @@ class Image_Imagemagick extends \Image_Driver
 		$x >= 0 and $x = '+'.$x;
 		$y >= 0 and $y = '+'.$y;
 
+		$image = '"'.$this->image_temp.'"';
 		$this->exec(
 			'composite',
 			'-compose atop -geometry '.$x.$y.' '.
@@ -140,12 +161,12 @@ class Image_Imagemagick extends \Image_Driver
 
 		$image = '"'.$this->image_temp.'"';
 		$r = $radius;
-		$command = $image." ( +clone -alpha extract ".
+		$command = $image." \\( +clone -alpha extract ".
 			( ! $tr ? '' : "-draw \"fill black polygon 0,0 0,$r $r,0 fill white circle $r,$r $r,0\" ")."-flip ".
 			( ! $br ? '' : "-draw \"fill black polygon 0,0 0,$r $r,0 fill white circle $r,$r $r,0\" ")."-flop ".
 			( ! $bl ? '' : "-draw \"fill black polygon 0,0 0,$r $r,0 fill white circle $r,$r $r,0\" ")."-flip ".
 			( ! $tl ? '' : "-draw \"fill black polygon 0,0 0,$r $r,0 fill white circle $r,$r $r,0\" ").
-			') -alpha off -compose CopyOpacity -composite '.$image;
+			'\\) -alpha off -compose CopyOpacity -composite '.$image;
 		$this->exec('convert', $command);
 	}
 
@@ -168,7 +189,7 @@ class Image_Imagemagick extends \Image_Driver
 				$filename = $this->image_temp;
 			}
 
-			$output = $this->exec('identify', '-format "%[fx:w] %[fx:h]" "'.$filename.'"[0]');
+			$output = $this->exec('identify', '-format "%w %h" "'.$filename.'"[0]');
 			list($width, $height) = explode(" ", $output[0]);
 			$return = (object) array(
 				'width' => $width,
@@ -189,7 +210,7 @@ class Image_Imagemagick extends \Image_Driver
 		return $return;
 	}
 
-	public function save($filename, $permissions = null)
+	public function save($filename = null, $permissions = null)
 	{
 		extract(parent::save($filename, $permissions));
 

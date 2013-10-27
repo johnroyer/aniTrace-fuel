@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -56,12 +56,6 @@ class Session_File extends \Session_Driver
 		$this->keys['created'] 		= $this->time->get_timestamp();
 		$this->keys['updated'] 		= $this->keys['created'];
 
-		// create the session record
-		$this->_write_file($this->keys['session_id'], serialize(array()));
-
-		// and set the session cookie
-		$this->_set_cookie();
-
 		return $this;
 	}
 
@@ -76,57 +70,69 @@ class Session_File extends \Session_Driver
 	 */
 	public function read($force = false)
 	{
+		// initialize the session
+		$this->data = array();
+		$this->keys = array();
+		$this->flash = array();
+
 		// get the session cookie
 		$cookie = $this->_get_cookie();
 
-		// if no session cookie was present, initialize a new session
-		if ($cookie === false or $force)
+		// if a cookie was present, find the session record
+		if ($cookie and ! $force and isset($cookie[0]))
 		{
-			$this->data = array();
-			$this->keys = array();
-			return $this;
-		}
-
-		// read the session file
-		$payload = $this->_read_file($this->keys['session_id']);
-
-		if ($payload === false)
-		{
-			// try to find the previous one
-			$payload = $this->_read_file($this->keys['previous_id']);
+			// read the session file
+			$payload = $this->_read_file($cookie[0]);
 
 			if ($payload === false)
 			{
 				// cookie present, but session record missing. force creation of a new session
 				return $this->read(true);
 			}
-		}
 
-		// unpack the payload
-		$payload = $this->_unserialize($payload);
+			// unpack the payload
+			$payload = $this->_unserialize($payload);
 
-		// session referral?
-		if (isset($payload['rotated_session_id']))
-		{
-			$payload = $this->_read_file($payload['rotated_session_id']);
-			if ($payload === false)
+			// session referral?
+			if (isset($payload['rotated_session_id']))
 			{
-				// cookie present, but session record missing. force creation of a new session
-				return $this->read(true);
+				$payload = $this->_read_file($payload['rotated_session_id']);
+				if ($payload === false)
+				{
+					// cookie present, but session record missing. force creation of a new session
+					return $this->read(true);
+				}
+				else
+				{
+					// unpack the payload
+					$payload = $this->_unserialize($payload);
+				}
+			}
+
+			if ( ! isset($payload[0]) or ! is_array($payload[0]))
+			{
+				// not a valid cookie payload
+			}
+			elseif ($payload[0]['updated'] + $this->config['expiration_time'] <= $this->time->get_timestamp())
+			{
+				// session has expired
+			}
+			elseif ($this->config['match_ip'] and $payload[0]['ip_hash'] !== md5(\Input::ip().\Input::real_ip()))
+			{
+				// IP address doesn't match
+			}
+			elseif ($this->config['match_ua'] and $payload[0]['user_agent'] !== \Input::user_agent())
+			{
+				// user agent doesn't match
 			}
 			else
 			{
-				// update the session
-				$this->keys['previous_id'] = $this->keys['session_id'];
-				$this->keys['session_id'] = $payload['rotated_session_id'];
-
-				// unpack the payload
-				$payload = $this->_unserialize($payload);
+				// session is valid, retrieve the payload
+				if (isset($payload[0]) and is_array($payload[0])) $this->keys  = $payload[0];
+				if (isset($payload[1]) and is_array($payload[1])) $this->data  = $payload[1];
+				if (isset($payload[2]) and is_array($payload[2])) $this->flash = $payload[2];
 			}
 		}
-
-		if (isset($payload[0])) $this->data = $payload[0];
-		if (isset($payload[1])) $this->flash = $payload[1];
 
 		return parent::read();
 	}
@@ -144,16 +150,13 @@ class Session_File extends \Session_Driver
 		// do we have something to write?
 		if ( ! empty($this->keys) or ! empty($this->data) or ! empty($this->flash))
 		{
-			// create the session if it doesn't exist
-			empty($this->keys) and $this->create();
-
 			parent::write();
 
 			// rotate the session id if needed
 			$this->rotate(false);
 
 			// session payload
-			$payload = $this->_serialize(array($this->data, $this->flash));
+			$payload = $this->_serialize(array($this->keys, $this->data, $this->flash));
 
 			// create the session file
 			$this->_write_file($this->keys['session_id'], $payload);
@@ -166,7 +169,8 @@ class Session_File extends \Session_Driver
 				$this->_write_file($this->keys['previous_id'], $payload);
 			}
 
-			$this->_set_cookie();
+			// then update the cookie
+			$this->_set_cookie(array($this->keys['session_id']));
 
 			// do some garbage collection
 			if (mt_rand(0,100) < $this->config['gc_probability'])
@@ -213,8 +217,7 @@ class Session_File extends \Session_Driver
 			}
 		}
 
-		// reset the stored session data
-		$this->keys = $this->flash = $this->data = array();
+		parent::destroy();
 
 		return $this;
 	}
@@ -249,6 +252,10 @@ class Session_File extends \Session_Driver
 
 			// close the file
 			fclose($handle);
+		}
+		else
+		{
+			throw new \FuelException('Could not open the session file in "'.$this->config['path']." for write access");
 		}
 
 		return $exists;

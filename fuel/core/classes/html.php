@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -28,7 +28,7 @@ namespace Fuel\Core;
 class Html
 {
 	public static $doctypes = null;
-	public static $html5 = false;
+	public static $html5 = true;
 
 	/**
 	 * Creates an html link
@@ -46,9 +46,12 @@ class Html
 			$urlparts = explode('?', $href, 2);
 			$href = \Uri::create($urlparts[0], array(), isset($urlparts[1])?$urlparts[1]:array(), $secure);
 		}
-		elseif ( ! preg_match('#^(javascript:|\#)# i', $href) and  is_bool($secure))
+		elseif ( ! preg_match('#^(javascript:|\#)# i', $href) and is_bool($secure))
 		{
 			$href = http_build_url($href, array('scheme' => $secure ? 'https' : 'http'));
+
+			// Trim the trailing slash
+			$href = rtrim($href, '/');
 		}
 
 		// Create and display a URL hyperlink

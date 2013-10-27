@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -41,6 +41,7 @@ class Config
 	 *
 	 * @param    mixed    $file         string file | config array | Config_Interface instance
 	 * @param    mixed    $group        null for no group, true for group is filename, false for not storing in the master config
+	 * @param    bool     $reload       true to force a reload even if the file is already loaded
 	 * @param    bool     $overwrite    true for array_merge, false for \Arr::merge
 	 * @return   array                  the (loaded) config array
 	 */
@@ -51,11 +52,11 @@ class Config
 		     ! is_object($file) and
 		    array_key_exists($file, static::$loaded_files))
 		{
+			$group === true and $group = $file;
 			if ($group === null or $group === false or ! isset(static::$items[$group]))
 			{
 				return false;
 			}
-			$group === true and $group = $file;
 			return static::$items[$group];
 		}
 
@@ -94,7 +95,7 @@ class Config
 		{
 			try
 			{
-				$config = $file->load($overwrite);
+				$config = $file->load($overwrite, ! $reload);
 			}
 			catch (\ConfigException $e)
 			{
@@ -147,22 +148,27 @@ class Config
 			$config = static::$items[$config];
 		}
 
-		$type = pathinfo($file, PATHINFO_EXTENSION);
-		if( ! $type)
+		$info = pathinfo($file);
+		$type = 'php';
+		if (isset($info['extension']))
 		{
-			$type = 'php';
-			$file .= '.'.$type;
+			$type = $info['extension'];
+			// Keep extension when it's an absolute path, because the finder won't add it
+			if ($file[0] !== '/' and $file[1] !== ':')
+			{
+				$file = substr($file, 0, -(strlen($type) + 1));
+			}
 		}
-
 		$class = '\\Config_'.ucfirst($type);
 
-		if( ! class_exists($class, true))
+		if ( ! class_exists($class))
 		{
-			throw new \ConfigException('Cannot save a config file of type: '.$type);
+			throw new \FuelException(sprintf('Invalid config type "%s".', $type));
 		}
 
-		$driver = new $class;
-		return $driver->save($file, $config);
+		$driver = new $class($file);
+
+		return $driver->save($config);
 	}
 
 	/**

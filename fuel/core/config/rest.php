@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -31,6 +31,14 @@ return array(
 	'default_format' => 'xml',
 
 	/*
+	| XML Basenode name
+	|
+	|	Default: xml
+	|
+	*/
+	'xml_basenode' => 'xml',
+
+	/*
 	| Name for the password protected REST API displayed on login dialogs
 	|
 	|	E.g: My Secret REST API
@@ -41,7 +49,10 @@ return array(
 	/*
 	| Is login required and if so, which type of login?
 	|
-	|	'' = no login required, 'basic' = unsecure login, 'digest' = more secure login
+	|	'' = no login required,
+	| 'basic' = unsecure login,
+	| 'digest' = more secure login
+	| or define a method name in your REST controller that handles authorization
 	|
 	*/
 	'auth' => '',

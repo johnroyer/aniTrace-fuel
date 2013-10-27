@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -68,6 +68,15 @@ class Response
 		509 => 'Bandwidth Limit Exceeded'
 	);
 
+	/**
+	 * Creates an instance of the Response class
+	 *
+	 * @param   string  $body    The response body
+	 * @param   int     $status  The HTTP response status for this response
+	 * @param   array   $headers Array of HTTP headers for this reponse
+	 *
+	 * @return  Response
+	 */
 	public static function forge($body = null, $status = 200, array $headers = array())
 	{
 		$response = new static($body, $status, $headers);
@@ -88,6 +97,7 @@ class Response
 	 * @param   string  $url     The url
 	 * @param   string  $method  The redirect method
 	 * @param   int     $code    The redirect status code
+	 *
 	 * @return  void
 	 */
 	public static function redirect($url = '', $method = 'location', $code = 302)
@@ -100,6 +110,8 @@ class Response
 		{
 			$url = $url !== '' ? \Uri::create($url) : \Uri::base();
 		}
+
+		strpos($url, '*') !== false and $url = \Uri::segment_replace($url);
 
 		if ($method == 'location')
 		{
@@ -119,12 +131,40 @@ class Response
 	}
 
 	/**
+	 * Redirects back to the previous page, if that page is within the current
+	 * application. If not, it will redirect to the given url, and if none is
+	 * given, back to the application root
+	 *
+	 * @param   string  $url     The url
+	 * @param   string  $method  The redirect method
+	 * @param   int     $code    The redirect status code
+	 *
+	 * @return  void
+	 */
+	public static function redirect_back($url = '', $method = 'location', $code = 302)
+	{
+		// do we have a referrer?
+		if ($referrer = \Input::referrer())
+		{
+			// is it within our website? And not equal to the current url?
+			if (strpos($referrer, \Uri::base()) === 0 and $referrer != \Uri::current())
+			{
+				// redirect back to where we came from
+				static::redirect($referrer, $method, $code);
+			}
+		}
+
+		// no referrer or an external link, do a normal redirect
+		static::redirect($url, $method, $code);
+	}
+
+	/**
 	 * @var  int  The HTTP status code
 	 */
 	public $status = 200;
 
 	/**
-	 * @var  array  An array of headers
+	 * @var  array  An array of HTTP headers
 	 */
 	public $headers = array();
 
@@ -153,7 +193,8 @@ class Response
 	 * Sets the response status code
 	 *
 	 * @param   string  $status  The status code
-	 * @return  $this
+	 *
+	 * @return  Response
 	 */
 	public function set_status($status = 200)
 	{
@@ -167,7 +208,8 @@ class Response
 	 * @param   string  The header name
 	 * @param   string  The header value
 	 * @param   string  Whether to replace existing value for the header, will never overwrite/be overwritten when false
-	 * @return  $this
+	 *
+	 * @return  Response
 	 */
 	public function set_header($name, $value, $replace = true)
 	{
@@ -187,6 +229,7 @@ class Response
 	 * Gets header information from the queue
 	 *
 	 * @param   string  The header name, or null for all headers
+	 *
 	 * @return  mixed
 	 */
 	public function get_header($name = null)
@@ -205,16 +248,18 @@ class Response
 	 * Sets (or returns) the body for the response
 	 *
 	 * @param   string  The response content
-	 * @return  $this|string
+	 *
+	 * @return  Response|string
 	 */
 	public function body($value = false)
 	{
-		if ($value === false)
+		if (func_num_args())
 		{
-			return $this->body;
+			$this->body = $value;
+			return $this;
 		}
-		$this->body = $value;
-		return $this;
+
+		return $this->body;
 	}
 
 	/**
@@ -262,16 +307,22 @@ class Response
 	 * Sends the response to the output buffer.  Optionally will send the
 	 * headers.
 	 *
-	 * @param   string  $send_headers  Whether to send the headers
-	 * @return  $this
+	 * @param   bool  $send_headers  Whether or not to send the defined HTTP headers
+	 *
+	 * @return  void
 	 */
 	public function send($send_headers = false)
 	{
-		$send_headers and $this->send_headers();
+		$body = $this->__toString();
+
+		if ($send_headers)
+		{
+			$this->send_headers();
+		}
 
 		if ($this->body != null)
 		{
-			echo $this->body;
+			echo $body;
 		}
 	}
 
@@ -282,6 +333,15 @@ class Response
 	 */
 	public function __toString()
 	{
-		return (string) $this->body();
+		// special treatment for array's
+		if (is_array($this->body))
+		{
+			// this var_dump() is here intentionally !
+			ob_start();
+			var_dump($this->body);
+			$this->body = html_entity_decode(ob_get_clean());
+		}
+
+		return (string) $this->body;
 	}
 }
