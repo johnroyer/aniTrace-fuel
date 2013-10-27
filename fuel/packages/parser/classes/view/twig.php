@@ -5,10 +5,10 @@
  * Fuel is a fast, lightweight, community driven PHP5 framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -23,6 +23,7 @@ class View_Twig extends \View
 {
 	protected static $_parser;
 	protected static $_parser_loader;
+	protected static $_twig_lexer_conf;
 
 	public static function _init()
 	{
@@ -52,6 +53,14 @@ class View_Twig extends \View
 				static::parser()->addGlobal($key, $value);
 			}
 		}
+		else
+		{
+			// Init the parser if you have no global data
+			static::parser();
+		}
+
+		$twig_lexer = new Twig_Lexer(static::$_parser, static::$_twig_lexer_conf);
+		static::$_parser->setLexer($twig_lexer);
 
 		try
 		{
@@ -90,18 +99,15 @@ class View_Twig extends \View
 		}
 
 		// Twig Lexer
-		$twig_lexer_conf = \Config::get('parser.View_Twig.delimiters', null);
-		if (isset($twig_lexer_conf))
+		static::$_twig_lexer_conf = \Config::get('parser.View_Twig.delimiters', null);
+		if (isset(static::$_twig_lexer_conf))
 		{
-			isset($twig_lexer_conf['tag_block'])
-				and $twig_lexer_conf['tag_block'] = array_values($twig_lexer_conf['tag_block']);
-			isset($twig_lexer_conf['tag_comment'])
-				and $twig_lexer_conf['tag_comment'] = array_values($twig_lexer_conf['tag_comment']);
-			isset($twig_lexer_conf['tag_variable'])
-				and $twig_lexer_conf['tag_variable'] = array_values($twig_lexer_conf['tag_variable']);
-
-			$twig_lexer = new Twig_Lexer(static::$_parser, $twig_lexer_conf);
-			static::$_parser->setLexer($twig_lexer);
+			isset(static::$_twig_lexer_conf['tag_block'])
+				and static::$_twig_lexer_conf['tag_block'] = array_values(static::$_twig_lexer_conf['tag_block']);
+			isset(static::$_twig_lexer_conf['tag_comment'])
+				and static::$_twig_lexer_conf['tag_comment'] = array_values(static::$_twig_lexer_conf['tag_comment']);
+			isset(static::$_twig_lexer_conf['tag_variable'])
+				and static::$_twig_lexer_conf['tag_variable'] = array_values(static::$_twig_lexer_conf['tag_variable']);
 		}
 
 		return static::$_parser;

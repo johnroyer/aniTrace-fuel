@@ -1,12 +1,14 @@
 <?php
 /**
+ * Fuel
+ *
  * Fuel is a fast, lightweight, community driven PHP5 framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2011 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -23,6 +25,8 @@ class Command
 {
 	public static function init($args)
 	{
+		\Config::load('oil', true);
+
 		// Remove flag options from the main argument list
 		$args = self::_clear_args($args);
 
@@ -32,7 +36,7 @@ class Command
 			{
 				if (\Cli::option('v', \Cli::option('version')))
 				{
-					\Cli::write('Fuel: '.\Fuel::VERSION);
+					\Cli::write('Fuel: '.\Fuel::VERSION.' running in "'.\Fuel::$env.'" mode');
 					return;
 				}
 
@@ -59,6 +63,7 @@ class Command
 						case 'controller':
 						case 'model':
 						case 'migration':
+						case 'task':
 							call_user_func('Oil\Generate::'.$action, array_slice($args, 3));
 						break;
 
@@ -105,18 +110,9 @@ class Command
 				case 'r':
 				case 'refine':
 
-					// Developers of third-party tasks may not be displaying PHP errors. Report any error and quit
-					set_error_handler(function($errno, $errstr, $errfile, $errline) {
-						if (!error_reporting()) return; // If the error was supressed with an @ then we ignore it!
-
-						\Cli::error("Error: {$errstr} in $errfile on $errline");
-						\Cli::beep();
-						exit(1);
-					});
-
 					$task = isset($args[2]) ? $args[2] : null;
-
 					call_user_func('Oil\Refine::run', $task, array_slice($args, 3));
+
 				break;
 
 				case 'cell':
@@ -153,7 +149,8 @@ class Command
 
 					// Suppressing this because if the file does not exist... well thats a bad thing and we can't really check
 					// I know that supressing errors is bad, but if you're going to complain: shut up. - Phil
-					@include_once('PHPUnit/Autoload.php');
+					$phpunit_autoload_path = \Config::get('oil.phpunit.autoload_path', 'PHPUnit/Autoload.php' );
+					@include_once($phpunit_autoload_path);
 
 					// Attempt to load PHUnit.  If it fails, we are done.
 					if ( ! class_exists('PHPUnit_Framework_TestCase'))
@@ -172,16 +169,20 @@ class Command
 					}
 
 					// CD to the root of Fuel and call up phpunit with the path to our config
-					$command = 'cd '.DOCROOT.'; phpunit -c "'.$phpunit_config.'"';
+					$phpunit_command = \Config::get('oil.phpunit.binary_path', 'phpunit');
+					$command = 'cd '.DOCROOT.'; '.$phpunit_command.' -c "'.$phpunit_config.'"';
 
-					// Respect the group option
+					// Respect the group options
 					\Cli::option('group') and $command .= ' --group '.\Cli::option('group');
+					\Cli::option('exclude-group') and $command .= ' --exclude-group '.\Cli::option('exclude-group');
 
 					// Respect the coverage-html option
 					\Cli::option('coverage-html') and $command .= ' --coverage-html '.\Cli::option('coverage-html');
 					\Cli::option('coverage-clover') and $command .= ' --coverage-clover '.\Cli::option('coverage-clover');
 					\Cli::option('coverage-text') and $command .= ' --coverage-text='.\Cli::option('coverage-text');
 					\Cli::option('coverage-php') and $command .= ' --coverage-php '.\Cli::option('coverage-php');
+					\Cli::option('log-junit') and $command .= ' --log-junit '.\Cli::option('log-junit');
+					\Cli::option('file') and $command .= ' '.\Cli::option('file');
 
 					\Cli::write('Tests Running...This may take a few moments.', 'green');
 
@@ -195,19 +196,54 @@ class Command
 					exit($return_code);
 				break;
 
+				case 's':
+				case 'server':
+
+					if (version_compare(PHP_VERSION, '5.4.0') < 0)
+					{
+						\Cli::write('The PHP built-in webserver is only available on PHP 5.4+', 'red');
+						break;
+					}
+
+					$php = \Cli::option('php', 'php');
+					$port = \Cli::option('p', \Cli::option('port', '8000'));
+					$host = \Cli::option('h', \Cli::option('host', 'localhost'));
+					$docroot = \Cli::option('d', \Cli::option('docroot', 'public/'));
+					$router = \Cli::option('r', \Cli::option('router', __DIR__.DS.'..'.DS.'phpserver.php'));
+
+					\Cli::write("Listening on http://$host:$port");
+					\Cli::write("Document root is $docroot");
+					\Cli::write("Press Ctrl-C to quit.");
+					passthru("$php -S $host:$port -t $docroot $router");
+				break;
+
 				default:
 
 					static::help();
 			}
 		}
 
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
-			\Cli::error('Error: '.$e->getMessage());
-			\Cli::beep();
-
-			\Cli::option('speak') and `say --voice="Trinoids" "{$e->getMessage()}"`;
+			static::print_exception($e);
 			exit(1);
+		}
+	}
+
+	private static function print_exception(\Exception $ex)
+	{
+		\Cli::error('Uncaught exception '.get_class($ex).': '.$ex->getMessage());
+		\Cli::error('Callstack: ');
+		\Cli::error($ex->getTraceAsString());
+		\Cli::beep();
+
+		\Cli::option('speak') and `say --voice="Trinoids" "{$ex->getMessage()}"`;
+
+		if (($previous = $ex->getPrevious()) != null)
+		{
+			\Cli::error('');
+			\Cli::error('Previous exception: ');
+			static::print_exception($previous);
 		}
 	}
 
@@ -216,7 +252,7 @@ class Command
 		echo <<<HELP
 
 Usage:
-  php oil [cell|console|generate|package|refine|help|test]
+  php oil [cell|console|generate|package|refine|help|server|test]
 
 Runtime options:
   -f, [--force]    # Overwrite files that already exist
@@ -247,6 +283,9 @@ HELP;
 			{
 				unset($actions[$key]);
 			}
+
+			// get rid of any junk added by Powershell on Windows...
+			isset($actions[$key]) and $actions[$key] = trim($actions[$key]);
 		}
 
 		return $actions;

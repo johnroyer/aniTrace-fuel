@@ -1,12 +1,14 @@
 <?php
 /**
+ * Fuel
+ *
  * Fuel is a fast, lightweight, community driven PHP5 framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2011 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -26,7 +28,7 @@ class Auth
 {
 
 	/**
-	 * @var  Auth_Login_Driver
+	 * @var  Auth_Login_Driver	default instance
 	 */
 	protected static $_instance = null;
 
@@ -351,7 +353,7 @@ class Auth
 	 */
 	protected static function _driver_instance($type, $instance)
 	{
-		$class = 'Auth_'.ucfirst($type).'_Driver';
+		$class = 'Auth_'.\Str::ucwords($type).'_Driver';
 		return $class::instance($instance);
 	}
 
