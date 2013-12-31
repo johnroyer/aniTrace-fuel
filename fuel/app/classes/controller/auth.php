@@ -77,7 +77,7 @@ class Controller_Auth extends Controller
 						'next' => Uri::create('auth/'),
 						'next_hint' => '重試',
 					);
-					$view = View::forge('alert');
+					$view = View::forge('dialog');
 					$view->set_global($data);
 					return $view;
 				}
