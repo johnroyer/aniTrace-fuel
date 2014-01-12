@@ -13,6 +13,7 @@ build
 nbproject/
 .idea
 *.swp
+composer.lock
 
 /fuel/app/config/crypt.php
 

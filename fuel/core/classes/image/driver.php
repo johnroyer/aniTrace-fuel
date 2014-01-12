@@ -1,15 +1,13 @@
 <?php
-
 /**
  * Part of the Fuel framework.
  *
- * Image manipulation class.
- *
- * @package		Fuel
- * @version		1.0
- * @license		MIT License
- * @copyright	2010 - 2011 Fuel Development Team
- * @link		http://fuelphp.com
+ * @package    Fuel
+ * @version    1.6
+ * @author     Fuel Development Team
+ * @license    MIT License
+ * @copyright  2010 - 2013 Fuel Development Team
+ * @link       http://fuelphp.com
  */
 
 namespace Fuel\Core;
@@ -26,16 +24,25 @@ abstract class Image_Driver
 	protected $queued_actions  = array();
 	protected $accepted_extensions;
 
+	/**
+	 * Initialize by loading config
+	 *
+	 * @return void
+	 */
+	public static function _init()
+	{
+		\Config::load('image', true);
+	}
+
 	public function __construct($config)
 	{
-		Config::load('image', 'image');
 		if (is_array($config))
 		{
-			$this->config = array_merge(Config::get('image'), $config);
+			$this->config = array_merge(\Config::get('image', array()), $config);
 		}
 		else
 		{
-			$this->config = Config::get('image');
+			$this->config = \Config::get('image', array());
 		}
 		$this->debug("Image Class was initialized using the " . $this->config['driver'] . " driver.");
 	}
@@ -212,6 +219,20 @@ abstract class Image_Driver
 	public function resize($width, $height = null, $keepar = true, $pad = false)
 	{
 		$this->queue('resize', $width, $height, $keepar, $pad);
+		return $this;
+	}
+
+
+	/**
+	 * Creates a vertical / horizontal or both mirror image.
+	 *
+	 * @access public
+	 * @param mixed $direction 'vertical', 'horizontal', 'both'
+	 * @return Image_Driver
+	 */
+	public function flip($direction)
+	{
+		$this->queue('flip', $direction);
 		return $this;
 	}
 
@@ -602,8 +623,13 @@ abstract class Image_Driver
 	 * @param   string  $permissions  Allows unix style permissions
 	 * @return  array
 	 */
-	public function save($filename, $permissions = null)
+	public function save($filename = null, $permissions = null)
 	{
+		if (empty($filename))
+		{
+			$filename = $this->image_filename;
+		}
+
 		$directory = dirname($filename);
 		if ( ! is_dir($directory))
 		{
@@ -751,12 +777,12 @@ abstract class Image_Driver
 	protected function check_extension($filename, $writevar = true, $force_extension = false)
 	{
 		$return = false;
-		
+
 		if ($force_extension !== false and in_array($force_extension, $this->accepted_extensions))
 		{
-			return $force_extension;			
+			return $force_extension;
 		}
-		
+
 		foreach ($this->accepted_extensions as $ext)
 		{
 			if (strtolower(substr($filename, strlen($ext) * -1)) == strtolower($ext))
@@ -845,7 +871,7 @@ abstract class Image_Driver
 	public function reload()
 	{
 		$this->debug("Reloading was called!");
-		$this->load($this->image_fullpath, false, $this->image_extension);
+		$this->load($this->image_fullpath);
 		return $this;
 	}
 

@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -54,7 +54,7 @@ class Validation
 		{
 			if ($fieldset->validation(false) != null)
 			{
-				throw new \DomainException('Form instance already exists, cannot be recreated. Use instance() instead of factory() to retrieve the existing instance.');
+				throw new \DomainException('Form instance already exists, cannot be recreated. Use instance() instead of forge() to retrieve the existing instance.');
 			}
 		}
 
@@ -175,7 +175,7 @@ class Validation
 	{
 		$field = $this->add($name, $label);
 
-		$rules = explode('|', $rules);
+		is_array($rules) or $rules = explode('|', $rules);
 
 		foreach ($rules as $rule)
 		{
@@ -353,7 +353,10 @@ class Validation
 		{
 			static::set_active_field($field);
 
-			$value = $this->input($field->name);
+			// convert form field array's to Fuel dotted notation
+			$name = str_replace(array('[',']'), array('.', ''), $field->name);
+
+			$value = $this->input($name);
 			if (($allow_partial === true and $value === null)
 				or (is_array($allow_partial) and ! in_array($field->name, $allow_partial)))
 			{
@@ -367,12 +370,19 @@ class Validation
 					$params    = $rule[1];
 					$this->_run_rule($callback, $value, $params, $field);
 				}
-				$this->validated[$field->name] = $value;
+				if (strpos($name, '.') !== false)
+				{
+					\Arr::set($this->validated, $name, $value);
+				}
+				else
+				{
+					$this->validated[$name] = $value;
+				}
 			}
 			catch (Validation_Error $v)
 			{
 				$this->errors[$field->name] = $v;
-				
+
 				if($field->fieldset())
 				{
 					$field->fieldset()->Validation()->add_error($field->name, $v);
@@ -489,9 +499,33 @@ class Validation
 			return $this->input;
 		}
 
+		// key transformation from form array to dot notation
+		if (strpos($key,'[') !== false)
+		{
+			$key = str_replace(array('[', ']'),array('.', ''),$key);
+		}
+
+		// if we don't have this key
 		if ( ! array_key_exists($key, $this->input))
 		{
-			$this->input[$key] =  $this->global_input_fallback ? \Input::param($key, $default) : $default;
+			// it might be in dot-notation
+			if (strpos($key,'.') !== false)
+			{
+				// check the input first
+				if (($result = \Arr::get($this->input, $key, null)) !== null)
+				{
+					$this->input[$key] = $result;
+				}
+				else
+				{
+					$this->input[$key] =  $this->global_input_fallback ? \Arr::get(\Input::param(), $key, $default) : $default;
+				}
+			}
+			else
+			{
+				// do a fallback to global input if needed, or use the provided default
+				$this->input[$key] =  $this->global_input_fallback ? \Input::param($key, $default) : $default;
+			}
 		}
 
 		return $this->input[$key];
@@ -572,7 +606,7 @@ class Validation
 	/**
 	 * Add error
 	 *
-	 * Adds an error for a given field. 
+	 * Adds an error for a given field.
 	 *
 	 * @param   string				field name for which to set the error
 	 * @param   Validation_Error  	error for the field
@@ -584,7 +618,7 @@ class Validation
 		{
 			$this->errors[$name] = $error;
 		}
-		
+
 		return $this;
 	}
 
@@ -720,7 +754,7 @@ class Validation
 	 */
 	public function _validation_min_length($val, $length)
 	{
-		return $this->_empty($val) || (MBSTRING ? mb_strlen($val) : strlen($val)) >= $length;
+		return $this->_empty($val) || \Str::length($val) >= $length;
 	}
 
 	/**
@@ -732,7 +766,7 @@ class Validation
 	 */
 	public function _validation_max_length($val, $length)
 	{
-		return $this->_empty($val) || (MBSTRING ? mb_strlen($val) : strlen($val)) <= $length;
+		return $this->_empty($val) || \Str::length($val) <= $length;
 	}
 
 	/**
@@ -744,7 +778,7 @@ class Validation
 	 */
 	public function _validation_exact_length($val, $length)
 	{
-		return $this->_empty($val) || (MBSTRING ? mb_strlen($val) : strlen($val)) == $length;
+		return $this->_empty($val) || \Str::length($val) == $length;
 	}
 
 	/**
@@ -841,9 +875,13 @@ class Validation
 			{
 				$flags = array('numeric', 'dots');
 			}
+			elseif ($flags == 'quotes')
+			{
+				$flags = array('singlequotes', 'doublequotes');
+			}
 			elseif ($flags == 'all')
 			{
-				$flags = array('alpha', 'utf8', 'numeric', 'spaces', 'newlines', 'tabs', 'punctuation', 'dashes');
+				$flags = array('alpha', 'utf8', 'numeric', 'spaces', 'newlines', 'tabs', 'punctuation', 'singlequotes', 'doublequotes', 'dashes');
 			}
 			else
 			{
@@ -861,6 +899,8 @@ class Validation
 		$pattern .= in_array('commas', $flags) && ! in_array('punctuation', $flags) ? ',' : '';
 		$pattern .= in_array('punctuation', $flags) ? "\.,\!\?:;\&" : '';
 		$pattern .= in_array('dashes', $flags) ? '_\-' : '';
+		$pattern .= in_array('singlequotes', $flags) ? "'" : '';
+		$pattern .= in_array('doublequotes', $flags) ? "\"" : '';
 		$pattern = empty($pattern) ? '/^(.*)$/' : ('/^(['.$pattern.'])+$/');
 		$pattern .= in_array('utf8', $flags) ? 'u' : '';
 
@@ -890,23 +930,60 @@ class Validation
 	{
 		return $this->_empty($val) || floatval($val) <= floatval($max_val);
 	}
-	
+
+	/**
+	 * Checks whether numeric input is between a minimum and a maximum value
+	 *
+	 * @param   string|float|int
+	 * @param   float|int
+	 * @param   float|int
+	 * @return  bool
+	 */
+	public function _validation_numeric_between($val, $min_val, $max_val)
+	{
+		return $this->_empty($val) or (floatval($val) >= floatval($min_val) and floatval($val) <= floatval($max_val));
+	}
+
 	/**
 	 * Conditionally requires completion of current field based on completion of another field
 	 *
 	 * @param mixed
-	 * @param string 
+	 * @param string
 	 * @return bool
 	 */
 	public function _validation_required_with($val, $field)
 	{
-	  	  
-	  if ( ! $this->_empty($this->input($field)) and $this->_empty($val))
-	  {
+		if ( ! $this->_empty($this->input($field)) and $this->_empty($val))
+		{
 			$validating = $this->active_field();
-			throw new \Validation_Error($validating, $val, array('required_with' => array($this->field($field))), array($this->field($field)->label));	    
-	  }
-	  
-	  return true;
-	}	
+			throw new \Validation_Error($validating, $val, array('required_with' => array($this->field($field))), array($this->field($field)->label));
+		}
+
+		return true;
+	}
+
+	/**
+	 * Checks whether string input is valid date format
+	 *
+	 * @param   string
+	 * @param   string  The format used at the time of a validation
+	 * @param   bool    Whether validation checks strict
+	 * @return  bool
+	 */
+	public function _validation_valid_date($val, $format = null, $strict = true)
+	{
+		if ($this->_empty($val))
+		{
+			return true;
+		}
+		if ($format)
+		{
+			$parsed = date_parse_from_format($format, $val);
+		}
+		else
+		{
+			$parsed = date_parse($val);
+		}
+		return \Arr::get($parsed, 'error_count', 1) + ($strict ? \Arr::get($parsed, 'warning_count', 1) : 0) === 0;
+	}
 }

@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -53,21 +53,30 @@ class Debug
 		{
 			$backtrace = debug_backtrace();
 
-			// If being called from within, show the file above in the backtrack
-			if (strpos($backtrace[0]['file'], 'core/classes/debug.php') !== FALSE)
+			// locate the first file entry that isn't this class itself
+			foreach ($backtrace as $stack => $trace)
 			{
-				$callee = $backtrace[1];
-				$label = \Inflector::humanize($backtrace[1]['function']);
-			}
-			else
-			{
-				$callee = $backtrace[0];
-				$label = 'Debug';
+				if (isset($trace['file']))
+				{
+					// If being called from within, show the file above in the backtrack
+					if (strpos($trace['file'], 'core/classes/debug.php') !== FALSE)
+					{
+						$callee = $backtrace[$stack+1];
+						$label = \Inflector::humanize($backtrace[$stack+1]['function']);
+					}
+					else
+					{
+						$callee = $trace;
+						$label = 'Debug';
+					}
+
+					$callee['file'] = \Fuel::clean_path($callee['file']);
+
+					break;
+				}
 			}
 
 			$arguments = func_get_args();
-
-			$callee['file'] = \Fuel::clean_path($callee['file']);
 
 			if ( ! static::$js_displayed)
 			{
@@ -76,7 +85,7 @@ class Debug
 JS;
 				static::$js_displayed = true;
 			}
-			echo '<div style="font-size: 13px;background: #EEE !important; border:1px solid #666; color: #000 !important; padding:10px;">';
+			echo '<div class="fuelphp-dump" style="font-size: 13px;background: #EEE !important; border:1px solid #666; color: #000 !important; padding:10px;">';
 			echo '<h1 style="border-bottom: 1px solid #CCC; padding: 0 0 5px 0; margin: 0 0 5px 0; font: bold 120% sans-serif;">'.$callee['file'].' @ line: '.$callee['line'].'</h1>';
 			echo '<pre style="overflow:auto;font-size:100%;">';
 
@@ -128,7 +137,7 @@ JS;
 JS;
 			static::$js_displayed = true;
 		}
-		echo '<div style="font-size: 13px;background: #EEE !important; border:1px solid #666; color: #000 !important; padding:10px;">';
+		echo '<div class="fuelphp-inspect" style="font-size: 13px;background: #EEE !important; border:1px solid #666; color: #000 !important; padding:10px;">';
 		echo '<h1 style="border-bottom: 1px solid #CCC; padding: 0 0 5px 0; margin: 0 0 5px 0; font: bold 120% sans-serif;">'.$callee['file'].' @ line: '.$callee['line'].'</h1>';
 		echo '<pre style="overflow:auto;font-size:100%;">';
 		$i = 0;
@@ -193,7 +202,7 @@ JS;
 		}
 		elseif (is_string($var))
 		{
-			$return .= "<i>{$scope}</i> <strong>{$name}</strong> (String): <span style=\"color:#E00000;\">\"{$var}\"</span> (".strlen($var)." characters)\n";
+			$return .= "<i>{$scope}</i> <strong>{$name}</strong> (String): <span style=\"color:#E00000;\">\"".\Security::htmlentities($var)."\"</span> (".strlen($var)." characters)\n";
 		}
 		elseif (is_float($var))
 		{
@@ -217,10 +226,33 @@ JS;
 		}
 		elseif (is_object($var))
 		{
+			// dirty hack to get the object id
+			ob_start();
+			var_dump($var);
+			$contents = ob_get_contents();
+			ob_end_clean();
+
+			// process it based on the xdebug presence and configuration
+			if (extension_loaded('xdebug') and ini_get('xdebug.overload_var_dump') === '1')
+			{
+				if (ini_get('html_errors'))
+				{
+					preg_match('~(.*?)\)\[<i>(\d+)(.*)~', $contents, $matches);
+				}
+				else
+				{
+					preg_match('~class (.*?)#(\d+)(.*)~', $contents, $matches);
+				}
+			}
+			else
+			{
+				preg_match('~object\((.*?)#(\d+)(.*)~', $contents, $matches);
+			}
+
 			$id = 'fuel_debug_'.mt_rand();
 			$rvar = new \ReflectionObject($var);
 			$vars = $rvar->getProperties();
-			$return .= "<i>{$scope}</i> <strong>{$name}</strong> (Object): ".get_class($var);
+			$return .= "<i>{$scope}</i> <strong>{$name}</strong> (Object #".$matches[2]."): ".get_class($var);
 			if (count($vars) > 0 and static::$max_nesting_level > $level)
 			{
 				$return .= " <a href=\"javascript:fuel_debug_toggle('$id');\" title=\"Click to ".(static::$js_toggle_open?"close":"open")."\">&crarr;</a>\n";
@@ -401,33 +433,8 @@ JS;
 	 */
 	public static function headers()
 	{
-		// deal with fcgi installs on PHP 5.3
-		if (version_compare(PHP_VERSION, '5.4.0') < 0 and  ! function_exists('apache_request_headers'))
-		{
-			$headers = array();
-			foreach (\Input::server() as $name => $value)
-			{
-				if (strpos($name, 'HTTP_') === 0)
-				{
-					$name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
-					$headers[$name] = $value;
-				}
-				elseif ($name == 'CONTENT_TYPE')
-				{
-					$headers['Content-Type'] = $value;
-				}
-				elseif ($name == 'CONTENT_LENGTH')
-				{
-					$headers['Content-Length'] = $value;
-				}
-			}
-		}
-		else
-		{
-			$headers = getAllHeaders();
-		}
-
-		return static::dump($headers);
+		// get the current request headers and dump them
+		return static::dump(\Input::headers());
 	}
 
 	/**

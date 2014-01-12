@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
- * @author     Dudeami, https://github.com/dudeami
+ * @version    1.6
+ * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -92,7 +92,7 @@ return array(
 		 * Note that config values here override the current configuration.
 		 *
 		 * Driver cannot be changed in here.
-		 */
+		 
 		'example' => array(
 			'quality' => 100,
 			'bgcolor' => null,
@@ -103,6 +103,7 @@ return array(
 				array('output', 'png')
 			)
 		)
+		*/
 	)
 );
 

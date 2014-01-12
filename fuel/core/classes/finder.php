@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.1
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -26,6 +26,16 @@ class Finder
 	 */
 	protected static $instance = null;
 
+	public static function _init()
+	{
+		\Config::load('file', true);
+
+		// make sure the configured chmod values are octal
+		$chmod = \Config::get('file.chmod.folders', 0777);
+		is_string($chmod) and \Config::set('file.chmod.folders', octdec($chmod));
+		$chmod = \Config::get('file.chmod.files', 0666);
+		is_string($chmod) and \Config::set('file.chmod.files', octdec($chmod));
+	}
 	/**
 	 * An alias for Finder::instance()->locate();
 	 *
@@ -76,6 +86,16 @@ class Finder
 	 * @var  array  $flash_paths  Search paths that only last for one lookup
 	 */
 	protected $flash_paths = array();
+
+	/**
+	 * @var  int  $cache_lifetime the amount of time to cache in seconds
+	 */
+	protected $cache_lifetime = null;
+
+	/**
+	 * @var  string  $cache_dir path to the cache file location
+	 */
+	protected $cache_dir = null;
 
 	/**
 	 * @var  array  $cached_paths  Cached lookup paths
@@ -148,9 +168,9 @@ class Finder
 	 */
 	public function remove_path($path)
 	{
-		for ($i = 0, $count = count($this->paths); $i < $count; $i++)
+		foreach ($this->paths as $i => $p)
 		{
-			if ($this->paths[$i] === $path)
+			if ($p === $path)
 			{
 				unset($this->paths[$i]);
 				break;
@@ -257,9 +277,10 @@ class Finder
 		$found = array();
 		foreach ($paths as $path)
 		{
-			if (($f = glob($path.$directory.DS.$filter)) !== false)
+			$files = new \GlobIterator(rtrim($path.$directory,DS).DS.$filter);
+			foreach($files as $file)
 			{
-				$found = array_merge($f, $found);
+				$found[] = $file->getPathname();
 			}
 		}
 
@@ -316,10 +337,10 @@ class Finder
 			$paths = $this->paths;
 
 			// get extra information of the active request
-			if (class_exists('Request', false) and ($uri = \Uri::string()) !== null)
+			if (class_exists('Request', false) and ($request = \Request::active()))
 			{
-				$cache_id .= $uri;
-				$paths = array_merge(\Request::active()->get_paths(), $paths);
+				$request->module and $cache_id .= $request->module;
+				$paths = array_merge($request->get_paths(), $paths);
 			}
 		}
 
@@ -330,7 +351,7 @@ class Finder
 		$file = $this->prep_path($dir).$file.$ext;
 		$cache_id .= $file;
 
-		if ($cached_path = $this->from_cache($cache_id))
+		if ($cache and $cached_path = $this->from_cache($cache_id))
 		{
 			return $cached_path;
 		}
@@ -354,7 +375,6 @@ class Finder
 		if ( ! empty($found) and $cache)
 		{
 			$this->add_to_cache($cache_id, $found);
-			$this->cache_valid = false;
 		}
 
 		return $found;
@@ -368,11 +388,11 @@ class Finder
 	 */
 	public function read_cache($cache_id)
 	{
-		// FIXME: Need to figure out a way to load the cache super early (before config
-		// file is even loaded)
-		return;
+		// make sure we have all config data
+		empty($this->cache_dir) and $this->cache_dir = \Config::get('cache_dir', APPPATH.'cache/');
+		empty($this->cache_lifetime) and $this->cache_lifetime = \Config::get('cache_lifetime', 3600);
 
-		if ($cached = \Fuel::cache($cache_id))
+		if ($cached = $this->cache($cache_id))
 		{
 			$this->cached_paths = $cached;
 		}
@@ -386,16 +406,7 @@ class Finder
 	 */
 	public function write_cache($cache_id)
 	{
-		// FIXME: Need to figure out a way to load the cache super early (before config
-		// file is even loaded)
-		return;
-
-		if ($this->cache_valid)
-		{
-			return;
-		}
-
-		\Fuel::cache($cache_id, $this->cached_paths);
+		$this->cache_valid or $this->cache($cache_id, $this->cached_paths);
 	}
 
 	/**
@@ -425,5 +436,101 @@ class Finder
 	{
 		$cache_id = md5($cache_id);
 		$this->cached_paths[$cache_id] = $path;
+		$this->cache_valid = false;
 	}
+
+	/**
+	 * This method does basic filesystem caching.  It is used for things like path caching.
+	 *
+	 * This method is from KohanaPHP's Kohana class.
+	 *
+	 * @param  string  the cache name
+	 * @param  array   the data to cache (if non given it returns)
+	 * @param  int     the number of seconds for the cache too live
+	 */
+	protected function cache($name, $data = null, $lifetime = null)
+	{
+		// Cache file is a hash of the name
+		$file = $name.'.pathcache';
+
+		// Cache directories are split by keys to prevent filesystem overload
+		$dir = rtrim($this->cache_dir, DS).DS;
+
+		if ($lifetime === NULL)
+		{
+			// Use the default lifetime
+			$lifetime = $this->cache_lifetime;
+		}
+
+		if ($data === null)
+		{
+			if (is_file($dir.$file))
+			{
+				if ((time() - filemtime($dir.$file)) < $lifetime)
+				{
+					// Return the cache
+					try
+					{
+						return unserialize(file_get_contents($dir.$file));
+					}
+					catch (\Exception $e)
+					{
+						// Cache exists but could not be read, ignore it
+					}
+				}
+				else
+				{
+					try
+					{
+						// Cache has expired
+						unlink($dir.$file);
+					}
+					catch (Exception $e)
+					{
+						// Cache has mostly likely already been deleted,
+						// let return happen normally.
+					}
+				}
+			}
+
+			// Cache not found
+			return null;
+		}
+
+		if ( ! is_dir($dir))
+		{
+			// Create the cache directory
+			mkdir($dir, \Config::get('file.chmod.folders', 0777), true);
+
+			// Set permissions (must be manually set to fix umask issues)
+			chmod($dir, \Config::get('file.chmod.folders', 0777));
+		}
+
+		// Force the data to be a string
+		$data = serialize($data);
+
+		try
+		{
+			// Write the cache, and set permissions
+			if ($result = (bool) file_put_contents($dir.$file, $data, LOCK_EX))
+			{
+				try
+				{
+					chmod($dir.$file, \Config::get('file.chmod.files', 0666));
+				}
+				catch (\Exception $e)
+				{
+					// we probably don't have permission, lets hope rights are ok
+				}
+			}
+
+			return $result;
+		}
+		catch (\Exception $e)
+		{
+			// Failed to write cache
+			return false;
+		}
+	}
+
 }

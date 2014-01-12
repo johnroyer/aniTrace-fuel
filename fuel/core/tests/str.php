@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -214,6 +214,11 @@ class Test_Str extends TestCase
 		$this->assertFalse(strpos($output, '0'));
 	}
 
+	/**
+	 * Test for Str::is_json()
+	 *
+	 * @test
+	 */
 	public function test_is_json()
 	{
 		$values = array('fuelphp','is' => array('awesome' => true));
@@ -225,6 +230,43 @@ class Test_Str extends TestCase
 		$this->assertFalse(Str::is_json($string));
 	}
 
+	/**
+	 * Test for Str::is_xml()
+	 *
+	 * @test
+	 * @requires extension libxml
+	 */
+	public function test_is_xml()
+	{
+		$valid_xml = '<?xml version="1.0" encoding="UTF-8"?>
+					<phpunit colors="true" stopOnFailure="false" bootstrap="bootstrap_phpunit.php">
+						<php>
+							<server name="doc_root" value="../../"/>
+							<server name="app_path" value="fuel/app"/>
+							<server name="core_path" value="fuel/core"/>
+							<server name="package_path" value="fuel/packages"/>
+						</php>
+					</phpunit>';
+
+		$invalid_xml = '<?xml version="1.0" encoding="UTF-8"?>
+					<phpunit colors="true" stopOnFailure="false" bootstrap="bootstrap_phpunit.php">
+						<php>
+							<server name="doc_root" value="../../"/>
+							<server name="app_path" value="fuel/app"/>
+							<server name="core_path" value="fuel/core"/>
+							<server name="package_path" value="fuel/packages"/>
+						</
+					</phpunit>';
+
+		$this->assertTrue(Str::is_xml($valid_xml));
+		$this->assertFalse(Str::is_xml($invalid_xml));
+	}
+
+	/**
+	 * Test for Str::is_serialized()
+	 *
+	 * @test
+	 */
 	public function test_is_serialized()
 	{
 		$values = array('fuelphp','is' => array('awesome' => true));
@@ -236,6 +278,11 @@ class Test_Str extends TestCase
 		$this->assertTrue(Str::is_serialized($string));
 	}
 
+	/**
+	 * Test for Str::is_html()
+	 *
+	 * @test
+	 */
 	public function test_is_html()
 	{
 		$html = '<div class="row"><div class="span12"><strong>FuelPHP</strong> is a simple, flexible, <i>community<i> driven PHP 5.3 web framework based on the best ideas of other frameworks with a fresh start.</p>';
@@ -244,4 +291,73 @@ class Test_Str extends TestCase
 		$this->assertTrue(Str::is_html($html));
 		$this->assertFalse(Str::is_html($simple_string));
 	}
+
+	/**
+	 * Test for Str::starts_with()
+	 *
+	 * @test
+	 */
+	public function test_starts_with()
+	{
+		$string = 'HELLO WORLD';
+
+		$output = Str::starts_with($string, 'HELLO');
+		$this->assertTrue($output);
+
+		$output = Str::starts_with($string, 'hello');
+		$this->assertFalse($output);
+
+		$output = Str::starts_with($string, 'hello', true);
+		$this->assertTrue($output);
+	}
+
+	/**
+	 * Test for Str::ends_with()
+	 *
+	 * @test
+	 */
+	public function test_ends_with()
+	{
+		$string = 'HELLO WORLD';
+
+		$output = Str::ends_with($string, 'WORLD');
+		$this->assertTrue($output);
+
+		$output = Str::ends_with($string, 'world');
+		$this->assertFalse($output);
+
+		$output = Str::ends_with($string, 'world', true);
+		$this->assertTrue($output);
+	}
+
+	/**
+	 * Test for Str::alternator()
+	 *
+	 * @test
+	 */
+	public function test_alternator()
+	{
+		$alt = Str::alternator('one', 'two', 'three');
+
+		$output = $alt();
+		$expected = 'one';
+		$this->assertEquals($output, $expected);
+
+		$output = $alt(false);
+		$expected = 'two';
+		$this->assertEquals($output, $expected);
+
+		$output = $alt();
+		$expected = 'two';
+		$this->assertEquals($output, $expected);
+
+		$output = $alt();
+		$expected = 'three';
+		$this->assertEquals($output, $expected);
+
+		$output = $alt();
+		$expected = 'one';
+		$this->assertEquals($output, $expected);
+	}
+
 }

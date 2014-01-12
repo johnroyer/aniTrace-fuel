@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -145,15 +145,15 @@ class Format
 
 		foreach ($data as $key => $value)
 		{
+			// replace anything not alpha numeric
+			$key = preg_replace('/[^a-z_\-0-9]/i', '', $key);
+
 			// no numeric keys in our xml please!
 			if (is_numeric($key))
 			{
 				// make string key...
 				$key = (\Inflector::singularize($basenode) != $basenode) ? \Inflector::singularize($basenode) : 'item';
 			}
-
-			// replace anything not alpha numeric
-			$key = preg_replace('/[^a-z_\-0-9]/i', '', $key);
 
 			// if there is another array found recrusively call this function
 			if (is_array($value) or is_object($value))
@@ -252,7 +252,7 @@ class Format
 	 */
 	public function to_json($data = null, $pretty = false)
 	{
-		if ($data == null)
+		if ($data === null)
 		{
 			$data = $this->_data;
 		}
@@ -266,16 +266,17 @@ class Format
 	/**
 	 * To JSONP conversion
 	 *
-	 * @param   mixed  $data
-	 * @param   bool   wether to make the json pretty
-	 * @return  string
+	 * @param   mixed   $data
+	 * @param   bool    $pretty    wether to make the json pretty
+	 * @param   string  $callback  JSONP callback
+	 * @return  string  formatted JSONP
 	 */
-	public function to_jsonp($data = null, $pretty = false)
+	public function to_jsonp($data = null, $pretty = false, $callback = null)
 	{
-		 $callback = \Input::param('callback');
-		 is_null($callback) and $callback = 'response';
+		$callback or $callback = \Input::param('callback');
+		is_null($callback) and $callback = 'response';
 
-		 return $callback.'('.$this->to_json($data, $pretty).')';
+		return $callback.'('.$this->to_json($data, $pretty).')';
 	}
 
 	/**
@@ -286,7 +287,7 @@ class Format
 	 */
 	public function to_serialized($data = null)
 	{
-		if ($data == null)
+		if ($data === null)
 		{
 			$data = $this->_data;
 		}
@@ -302,7 +303,7 @@ class Format
 	 */
 	public function to_php($data = null)
 	{
-		if ($data == null)
+		if ($data === null)
 		{
 			$data = $this->_data;
 		}
@@ -433,6 +434,7 @@ class Format
 	protected static function pretty_json($data)
 	{
 		$json = json_encode($data);
+
 		if ( ! $json)
 		{
 			return false;

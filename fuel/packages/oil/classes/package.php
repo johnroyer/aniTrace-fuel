@@ -1,12 +1,14 @@
 <?php
 /**
+ * Fuel
+ *
  * Fuel is a fast, lightweight, community driven PHP5 framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -48,28 +50,33 @@ class Package
 
 		foreach ($config['sources'] as $source)
 		{
-			$zip_url = 'http://' . rtrim($source, '/').'/fuel-'.$package.'/zipball/'.$version;
+			$packages = array('fuel-'.$package, $package);
 
-			if ($fp = @fopen($zip_url, 'r'))
+			foreach ($packages as $package)
 			{
-				// We don't actually need this, just checking the file is there
-				fclose($fp);
+				$zip_url = 'http://' . rtrim($source, '/').'/'.$package.'/zipball/'.$version;
 
-				// Now, lets get this package
-
-				// If a direct download is requested, or git is unavailable, download it!
-				if (\Cli::option('direct') OR static::_use_git() === false)
+				if ($fp = @fopen($zip_url, 'r'))
 				{
-					static::_download_package_zip($zip_url, $package, $version);
-				}
+					// We don't actually need this, just checking the file is there
+					fclose($fp);
 
-				// Otherwise, get your clone on baby!
-				else
-				{
-					static::_clone_package_repo($source, $package, $version);
-				}
+					// Now, lets get this package
 
-				exit;
+					// If a direct download is requested, or git is unavailable, download it!
+					if (\Cli::option('direct') OR static::_use_git() === false)
+					{
+						static::_download_package_zip($zip_url, $package, $version);
+						exit;
+					}
+
+					// Otherwise, get your clone on baby!
+					else
+					{
+						static::_clone_package_repo($source, $package, $version);
+						exit;
+					}
+				}
 			}
 		}
 
@@ -152,36 +159,55 @@ HELP;
 		\Cli::write('Downloading package: ' . $zip_url);
 
 		// Make the folder so we can extract the ZIP to it
-		mkdir($tmp_folder = APPPATH . 'tmp/' . $package . '-' . time());
+		mkdir($tmp_folder = APPPATH . 'tmp' . DS . $package . '-' . time());
 
 		$zip_file = $tmp_folder . '.zip';
 		@copy($zip_url, $zip_file);
 
-		$unzip = new \Unzip;
-		$files = $unzip->extract($zip_file, $tmp_folder);
-
-		// Grab the first folder out of it (we dont know what it's called)
-		list($tmp_package_folder) = glob($tmp_folder.'/*', GLOB_ONLYDIR);
-
-		$package_folder = PKGPATH . $package;
-
-		// Move that folder into the packages folder
-		rename($tmp_package_folder, $package_folder);
-
-		unlink($zip_file);
-		rmdir($tmp_folder);
-
-		foreach ($files as $file)
+		if (file_exists($zip_file))
 		{
-			$path = str_replace($tmp_package_folder, $package_folder, $file);
-			chmod($path, octdec(755));
-			\Cli::write("\t" . $path);
+			$unzip = new \Unzip;
+			$files = $unzip->extract($zip_file, $tmp_folder);
+
+			// Grab the first folder out of it (we dont know what it's called)
+			foreach($pkgfolders = new \GlobIterator($tmp_folder.DS.'*') as $pkgfolder)
+			{
+				if ($pkgfolder->isDir())
+				{
+					$tmp_package_folder = $tmp_folder.DS.$pkgfolder->getFilename();
+					break;
+				}
+			}
+
+			if (empty($tmp_package_folder))
+			{
+				throw new \FuelException('The package zip file doesn\'t contain any install directory.');
+			}
+
+			$package_folder = PKGPATH . $package;
+
+			// Move that folder into the packages folder
+			rename($tmp_package_folder, $package_folder);
+
+			unlink($zip_file);
+			rmdir($tmp_folder);
+
+			foreach ($files as $file)
+			{
+				$path = str_replace($tmp_package_folder, $package_folder, $file);
+				chmod($path, octdec(755));
+				\Cli::write("\t" . $path);
+			}
+		}
+		else
+		{
+			\Cli::write('Package could not be found', 'red');
 		}
 	}
 
 	public static function _clone_package_repo($source, $package, $version)
 	{
-		$repo_url = 'git://' . rtrim($source, '/').'/fuel-'.$package . '.git';
+		$repo_url = 'git://' . rtrim($source, '/').'/'.$package . '.git';
 
 		\Cli::write('Downloading package: ' . $repo_url);
 

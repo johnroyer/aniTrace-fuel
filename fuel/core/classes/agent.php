@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -189,17 +189,21 @@ class Agent
 			}
 		}
 
-		// try the build in get_browser() method
-		if (ini_get('browscap') == '' or false === $browser = get_browser(null, true))
+		// do we have a user agent?
+		if (static::$user_agent)
 		{
-			// if it fails, emulate get_browser()
-			$browser = static::get_from_browscap();
-		}
+			// try the build in get_browser() method
+			if (ini_get('browscap') == '' or false === $browser = get_browser(null, true))
+			{
+				// if it fails, emulate get_browser()
+				$browser = static::get_from_browscap();
+			}
 
-		if ($browser)
-		{
-			// save it for future reference
-			static::$properties = array_change_key_case($browser);
+			if ($browser)
+			{
+				// save it for future reference
+				static::$properties = array_change_key_case($browser);
+			}
 		}
 	}
 
@@ -412,6 +416,8 @@ class Agent
 	 */
 	protected static function parse_browscap()
 	{
+		$cache = \Cache::forge(static::$config['cache']['identifier'].'.browscap_file', static::$config['cache']['driver']);
+
 		// get the browscap.ini file
 		switch (static::$config['browscap']['method'])
 		{
@@ -432,6 +438,7 @@ class Agent
 				$curl = curl_init();
 				curl_setopt($curl, CURLOPT_BINARYTRANSFER, 1);
 				curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
 				curl_setopt($curl, CURLOPT_MAXREDIRS, 5);
 				curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 				curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -443,7 +450,14 @@ class Agent
 
 			case 'wrapper':
 				ini_set('user_agent', 'Fuel PHP framework - Agent class (http://fuelphp.com)');
-				$data = file_get_contents(static::$config['browscap']['url']);
+				try
+				{
+					$data = file_get_contents(static::$config['browscap']['url']);
+				}
+				catch (\ErrorException $e)
+				{
+					$data = false;
+				}
 			default:
 
 			break;
@@ -451,7 +465,23 @@ class Agent
 
 		if ($data === false)
 		{
-			logger(\Fuel::L_ERROR, 'Failed to download browscap.ini file.', 'Agent::parse_browscap');
+			// if no data could be download, try retrieving a cached version
+			try
+			{
+				$data = $cache->get(false);
+
+				// if the cached version is used, only cache the parsed result for a day
+				static::$config['cache']['expiry'] = 86400;
+			}
+			catch (\Exception $e)
+			{
+				logger(\Fuel::L_ERROR, 'Failed to download browscap.ini file.', 'Agent::parse_browscap');
+			}
+		}
+		else
+		{
+			// store the downloaded data in the cache as a backup for future use
+			$cache->set($data, null);
 		}
 
 		// parse the downloaded data

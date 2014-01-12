@@ -89,11 +89,12 @@ class Database_Query_Builder_Select extends \Database_Query_Builder_Where
 	 * Choose the columns to select from, using an array.
 	 *
 	 * @param   array  list of column names or aliases
+	 * @param	bool	if true, don't merge but overwrite
 	 * @return  $this
 	 */
-	public function select_array(array $columns)
+	public function select_array(array $columns, $reset = false)
 	{
-		$this->_select = array_merge($this->_select, $columns);
+		$this->_select = $reset ? $columns : array_merge($this->_select, $columns);
 
 		return $this;
 	}
@@ -144,15 +145,58 @@ class Database_Query_Builder_Select extends \Database_Query_Builder_Where
 	}
 
 	/**
-	 * Creates a "GROUP BY ..." filter.
+	 * Adds "AND ON ..." conditions for the last created JOIN statement.
 	 *
 	 * @param   mixed   column name or array($column, $alias) or object
+	 * @param   string  logic operator
+	 * @param   mixed   column name or array($column, $alias) or object
+	 * @return  $this
+	 */
+	public function and_on($c1, $op, $c2)
+	{
+		$this->_last_join->and_on($c1, $op, $c2);
+
+		return $this;
+	}
+
+	/**
+	 * Adds "OR ON ..." conditions for the last created JOIN statement.
+	 *
+	 * @param   mixed   column name or array($column, $alias) or object
+	 * @param   string  logic operator
+	 * @param   mixed   column name or array($column, $alias) or object
+	 * @return  $this
+	 */
+	public function or_on($c1, $op, $c2)
+	{
+		$this->_last_join->or_on($c1, $op, $c2);
+
+		return $this;
+	}
+
+	/**
+	 * Creates a "GROUP BY ..." filter.
+	 *
+	 * @param   mixed   column name or array($column, $column) or object
 	 * @param   ...
 	 * @return  $this
 	 */
 	public function group_by($columns)
 	{
 		$columns = func_get_args();
+
+		foreach($columns as $idx => $column)
+		{
+			// if an array of columns is passed, flatten it
+			if (is_array($column))
+			{
+				foreach($column as $c)
+				{
+					$columns[] = $c;
+				}
+				unset($columns[$idx]);
+			}
+		}
 
 		$this->_group_by = array_merge($this->_group_by, $columns);
 
@@ -324,7 +368,7 @@ class Database_Query_Builder_Select extends \Database_Query_Builder_Where
 			// Get the database instance
 			$db = \Database_Connection::instance($db);
 		}
-		
+
 		// Callback to quote identifiers
 		$quote_ident = array($db, 'quote_identifier');
 
@@ -404,18 +448,18 @@ class Database_Query_Builder_Select extends \Database_Query_Builder_Where
 
 	public function reset()
 	{
-		$this->_select   =
-		$this->_from     =
-		$this->_join     =
-		$this->_where    =
-		$this->_group_by =
-		$this->_having   =
+		$this->_select   = array();
+		$this->_from     = array();
+		$this->_join     = array();
+		$this->_where    = array();
+		$this->_group_by = array();
+		$this->_having   = array();
 		$this->_order_by = array();
 
 		$this->_distinct = FALSE;
 
-		$this->_limit     =
-		$this->_offset    =
+		$this->_limit     = NULL;
+		$this->_offset    = NULL;
 		$this->_last_join = NULL;
 
 		$this->_parameters = array();

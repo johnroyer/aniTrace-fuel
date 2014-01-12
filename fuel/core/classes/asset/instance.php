@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -142,6 +142,7 @@ class Asset_Instance
 	public function add_path($path, $type = null)
 	{
 		is_null($type) and $type = $this->_path_folders;
+		empty($path) and $path = DOCROOT;
 
 		if( is_array($type))
 		{
@@ -252,7 +253,7 @@ class Asset_Instance
 				}
 				else
 				{
-					$raw or $file = $this->_asset_url.$filename;
+					$raw or $file = $this->_asset_url.$this->_path_folders[$type].$filename;
 				}
 			}
 			else
@@ -435,13 +436,12 @@ class Asset_Instance
 		{
 			empty($folder) or $folder = $this->_unify_path($folder);
 
-			if (is_file($path.$folder.$this->_unify_path($file, null, false)))
+			if (is_file($newfile = $path.$folder.$this->_unify_path($file, null, false)))
 			{
-				$file = $path.$folder.$this->_unify_path($file, null, false);
-				strpos($file, DOCROOT) === 0 and $file = substr($file, strlen(DOCROOT));
+				strpos($newfile, DOCROOT) === 0 and $newfile = substr($newfile, strlen(DOCROOT));
 
 				// return the file found, make sure it uses forward slashes on Windows
-				return str_replace(DS, '/', $file);
+				return str_replace(DS, '/', $newfile);
 			}
 		}
 

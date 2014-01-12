@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -20,6 +20,12 @@ namespace Fuel\Core;
  */
 class Test_Date extends TestCase
 {
+	protected function setUp()
+	{
+		// make sure the locale and language are is set correctly for the tests
+		setlocale(LC_ALL, 'en_US') === false and setlocale(LC_ALL, 'en_US.UTF8');
+		\Config::set('language', 'en');
+	}
 
 	/**
 	 * Test for Date::days_in_month()
@@ -40,6 +46,28 @@ class Test_Date extends TestCase
 		$expected = 29;
 		$this->assertEquals($expected, $output);
 	}
+
+	/**
+	 * Test for Date::days_in_month(0)
+	 * @expectedException UnexpectedValueException
+	 * @test
+	 */
+	public function test_days_in_month_0_exception()
+	{
+		$output = Date::days_in_month(0);
+	}
+
+	/**
+	 * Test for Date::days_in_month(13)
+	 * @expectedException UnexpectedValueException
+	 * @test
+	 */
+	public function test_days_in_month_13_exception()
+	{
+		$output = Date::days_in_month(13);
+	}
+
+
 
 	/**
 	 * Test for Date::format()

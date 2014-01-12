@@ -1,25 +1,34 @@
 <?php
 
-class Controller_Admin extends Controller_Base {
-
+class Controller_Admin extends Controller_Base
+{
 	public $template = 'admin/template';
 
 	public function before()
 	{
 		parent::before();
 
-		if ( ! Auth::member(100) and Request::active()->action != 'login')
+		if (Request::active()->controller !== 'Controller_Admin' or ! in_array(Request::active()->action, array('login', 'logout')))
 		{
-			Response::redirect('admin/login');
+			if (Auth::check())
+			{
+				if ( ! Auth::member(100))
+				{
+					Session::set_flash('error', e('You don\'t have access to the admin panel'));
+					Response::redirect('/');
+				}
+			}
+			else
+			{
+				Response::redirect('admin/login');
+			}
 		}
 	}
 
 	public function action_login()
 	{
-		if (Auth::check())
-		{
-			Response::redirect('admin');
-		}
+		// Already logged in
+		Auth::check() and Response::redirect('admin');
 
 		$val = Validation::forge();
 

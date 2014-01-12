@@ -1,6 +1,10 @@
-		is_null($id) and Response::redirect('<?php echo $controller_name ?>');
+		is_null($id) and Response::redirect('<?php echo $uri ?>');
 
-		$<?php echo $singular_name; ?> = Model_<?php echo $model_name; ?>::find($id);
+		if ( ! $<?php echo $singular_name; ?> = Model_<?php echo $model_name; ?>::find($id))
+		{
+			Session::set_flash('error', 'Could not find <?php echo $singular_name; ?> #'.$id);
+			Response::redirect('<?php echo $uri ?>');
+		}
 
 		$val = Model_<?php echo $model_name; ?>::validate('edit');
 
@@ -14,7 +18,7 @@
 			{
 				Session::set_flash('success', 'Updated <?php echo $singular_name; ?> #' . $id);
 
-				Response::redirect('<?php echo $uri; ?>');
+				Response::redirect('<?php echo $uri ?>');
 			}
 
 			else

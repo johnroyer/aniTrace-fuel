@@ -58,6 +58,16 @@ class DB
 		return \Database_Connection::instance($db)->last_query;
 	}
 
+	/*
+	 * Returns the DB drivers error info
+	 *
+	 * @return	mixed	the DB drivers error info
+	 */
+	public static function error_info($db = null)
+	{
+		return \Database_Connection::instance($db)->error_info();
+	}
+
 	/**
 	 * Create a new [Database_Query_Builder_Select]. Each argument will be
 	 * treated as a column. To generate a `foo AS bar` alias, use an array.
@@ -146,6 +156,21 @@ class DB
 	public static function expr($string)
 	{
 		return new \Database_Expression($string);
+	}
+
+	/**
+	 * Create a new [Database_Expression] containing a quoted identifier. An expression
+	 * is the only way to use SQL functions within query builders.
+	 *
+	 *     $expression = DB::identifier('users.id');	// returns `users`.`id` for MySQL
+	 *
+	 * @param	string	$string	the string to quote
+	 * @param	string	$db		the database connection to use
+	 * @return	Database_Expression
+	 */
+	public static function identifier($string, $db = null)
+	{
+		return new \Database_Expression(static::quote_identifier($string, $db));
 	}
 
 	/**

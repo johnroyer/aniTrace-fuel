@@ -58,7 +58,7 @@ class Database_PDO_Connection extends \Database_Connection
 			'username'   => null,
 			'password'   => null,
 			'persistent' => false,
-			'compress'	 => true,
+			'compress'   => false,
 		));
 
 		// Clear the connection parameters for security
@@ -142,8 +142,38 @@ class Database_PDO_Connection extends \Database_Connection
 
 		if ( ! empty($this->_config['profiling']))
 		{
-			// Benchmark this query for the current instance
-			$benchmark = \Profiler::start("Database ({$this->_instance})", $sql);
+			// Get the paths defined in config
+			$paths = \Config::get('profiling_paths');
+
+			// Storage for the trace information
+			$stacktrace = array();
+
+			// Get the execution trace of this query
+			$include = false;
+			foreach (debug_backtrace() as $index => $page)
+			{
+				// Skip first entry and entries without a filename
+				if ($index > 0 and empty($page['file']) === false)
+				{
+					// Checks to see what paths you want backtrace
+					foreach($paths as $index => $path)
+					{
+						if (strpos($page['file'], $path) !== false)
+						{
+							$include = true;
+							break;
+						}
+					}
+
+					// Only log if no paths we defined, or we have a path match
+					if ($include or empty($paths))
+					{
+						$stacktrace[] = array('file' => Fuel::clean_path($page['file']), 'line' => $page['line']);
+					}
+				}
+			}
+
+			$benchmark = \Profiler::start("Database ({$this->_instance})", $sql, $stacktrace);
 		}
 
 		// run the query. if the connection is lost, try 3 times to reconnect
@@ -153,24 +183,36 @@ class Database_PDO_Connection extends \Database_Connection
 		{
 			try
 			{
+				// try to run the query
 				$result = $this->_connection->query($sql);
 				break;
 			}
 			catch (\Exception $e)
 			{
-				if (strpos($e->getMessage(), '2006 MySQL') !== false)
+				// if failed and we have attempts left
+				if ($attempts > 0)
 				{
-					$this->connect();
+					// try reconnecting if it was a MySQL disconnected error
+					if (strpos($e->getMessage(), '2006 MySQL') !== false)
+					{
+						$this->disconnect();
+						$this->connect();
+					}
+					else
+					{
+						// other database error, cleanup the profiler
+						isset($benchmark) and  \Profiler::delete($benchmark);
+
+						// and convert the exception in a database exception
+						$error_code = is_numeric($e->getCode()) ? $e->getCode() : 0;
+						throw new \Database_Exception($e->getMessage().' with query: "'.$sql.'"', $error_code, $e);
+					}
 				}
+
+				// no more attempts left, bail out
 				else
 				{
-					if (isset($benchmark))
-					{
-						// This benchmark is worthless
-						\Profiler::delete($benchmark);
-					}
-
-					// Convert the exception in a database exception
+					// and convert the exception in a database exception
 					$error_code = is_numeric($e->getCode()) ? $e->getCode() : 0;
 					throw new \Database_Exception($e->getMessage().' with query: "'.$sql.'"', $error_code, $e);
 				}
@@ -315,7 +357,18 @@ class Database_PDO_Connection extends \Database_Connection
 		// Make sure the database is connected
 		$this->_connection or $this->connect();
 
-		return $this->_connection->quote($value);
+		$result = $this->_connection->quote($value);
+		// poor-mans workaround for the fact that not all drivers implement quote()
+		if (empty($result))
+		{
+			$result = "'".str_replace("'", "''", $value)."'";
+		}
+		return $result;
+	}
+
+	public function error_info()
+	{
+		return $this->_connection->errorInfo();
 	}
 
 	public function in_transaction()

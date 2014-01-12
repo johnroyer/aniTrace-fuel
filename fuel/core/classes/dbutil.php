@@ -3,10 +3,10 @@
  * Part of the Fuel framework.
  *
  * @package    Fuel
- * @version    1.0
+ * @version    1.6
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2012 Fuel Development Team
+ * @copyright  2010 - 2013 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -30,13 +30,13 @@ class DBUtil
 	/**
 	 * Sets the database connection to use for following DBUtil calls.
 	 *
-	 * @param  string|object  string connection name or \Database_Connection object, null for default
+	 * @param  string  $connection  connection name, null for default
 	 */
-	public static function set_connection($connection, $db = null)
+	public static function set_connection($connection)
 	{
-		if ( ! is_string($connection) and ($connection instanceof Database_Connection))
+		if ( ! is_string($connection))
 		{
-			throw new \FuelException('A connection must be supplied as a string or a Database_Connection object.');
+			throw new \FuelException('A connection must be supplied as a string.');
 		}
 
 		static::$connection = $connection;
@@ -311,21 +311,26 @@ class DBUtil
 			$sql .= \DB::quote_identifier($field);
 			$sql .= (array_key_exists('NAME', $attr) and $attr['NAME'] !== $field) ? ' '.\DB::quote_identifier($attr['NAME'], $db ? $db : static::$connection).' ' : '';
 			$sql .= array_key_exists('TYPE', $attr) ? ' '.$attr['TYPE'] : '';
-			
+
 			if(array_key_exists('CONSTRAINT',$attr))
 			{
 				if(is_array($attr['CONSTRAINT']))
 				{
-					$sql .= "('".implode("', '",$attr['CONSTRAINT'])."')";
+					$sql .= "(";
+					foreach($attr['CONSTRAINT'] as $constraint)
+					{
+						$sql .= (is_string($constraint) ? "'".$constraint."'" : $constraint).", ";
+					}
+					$sql = rtrim($sql,', '). ")";
 				}
 				else
 				{
 					$sql .= '('.$attr['CONSTRAINT'].')';
 				}
 			}
-			
+
 			$sql .= array_key_exists('CHARSET', $attr) ? static::process_charset($attr['CHARSET'], $db ? $db : static::$connection) : '';
-			
+
 			if (array_key_exists('UNSIGNED', $attr) and $attr['UNSIGNED'] === true)
 			{
 				$sql .= ' UNSIGNED';
@@ -350,6 +355,11 @@ class DBUtil
 				$sql .= ' AUTO_INCREMENT';
 			}
 
+			if (array_key_exists('PRIMARY_KEY', $attr) and $attr['PRIMARY_KEY'] === true)
+			{
+				$sql .= ' PRIMARY KEY';
+			}
+
 			if (array_key_exists('FIRST', $attr) and $attr['FIRST'] === true)
 			{
 				$sql .= ' FIRST';
@@ -358,7 +368,7 @@ class DBUtil
 			{
 				$sql .= ' AFTER '.\DB::quote_identifier($attr['AFTER'], $db ? $db : static::$connection);
 			}
-			
+
 			if (array_key_exists('COMMENT', $attr))
 			{
 				$sql .= ' COMMENT '.\DB::escape($attr['COMMENT'], $db ? $db : static::$connection);
@@ -398,32 +408,32 @@ class DBUtil
 
 		return $charset;
 	}
-	
+
 	/**
 	 * Adds a single foreign key to a table
-	 * 
+	 *
 	 * @param	string	$table			the table name
 	 * @param	array 	$foreign_key	a single foreign key
 	 * @return 	int		number of affected rows
 	 */
-	public static function add_foreign_key($table, $foreign_key) 
+	public static function add_foreign_key($table, $foreign_key)
 	{
 		if ( ! is_array($foreign_key))
 		{
 			throw new InvalidArgumentException('Foreign key for add_foreign_key() must be specified as an array');
 		}
-		
+
 		$sql = 'ALTER TABLE ';
 		$sql .= \DB::quote_identifier(\DB::table_prefix($table)).' ';
 		$sql .= 'ADD ';
 		$sql .= ltrim(static::process_foreign_keys(array($foreign_key)), ',');
-		
+
 		return \DB::query($sql, \DB::UPDATE)->execute();
 	}
-	
+
 	/**
 	 * Drops a foreign key from a table
-	 * 
+	 *
 	 * @param	string	$table		the table name
 	 * @param	string	$fk_name	the foreign key name
 	 * @return 	int		number of affected rows
@@ -433,10 +443,10 @@ class DBUtil
 		$sql = 'ALTER TABLE ';
 		$sql .= \DB::quote_identifier(\DB::table_prefix($table)).' ';
 		$sql .= 'DROP FOREIGN KEY '.\DB::quote_identifier($fk_name);
-		
+
 		return \DB::query($sql, \DB::UPDATE)->execute();
 	}
-	
+
 
 	/**
 	 * Returns string of foreign keys
@@ -563,6 +573,15 @@ class DBUtil
 		}
 		catch (\Database_Exception $e)
 		{
+			// check if we have a DB connection at all
+			$connection = \Database_Connection::instance($db ? $db : static::$connection)->connection();
+
+			// if no connection could be made, re throw the exception
+			if ( ! $connection)
+			{
+				throw $e;
+			}
+
 			return false;
 		}
 	}
