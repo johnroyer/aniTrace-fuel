@@ -1,6 +1,6 @@
 <?php
 
-class Model_Test_List extends \Orm\Model
+class Model_Anime_List extends \Orm\Model
 {
 	protected static $_properties = array(
 		'id',
@@ -22,6 +22,6 @@ class Model_Test_List extends \Orm\Model
 			'property' => 'updated',
 		),
 	);
-	protected static $_table_name = 'test_lists';
+	protected static $_table_name = 'anime_lists';
 
 }
