@@ -1,5 +1,7 @@
 <?php
 use \Model\Anime;
+use \Model\Anime_List;
+
 /**
  * Methods for Ajax request in animtion page.
  **/
