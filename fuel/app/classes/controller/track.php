@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * Controller for loading anime tracking view.
  */
 class Controller_Track extends Controller
 {
