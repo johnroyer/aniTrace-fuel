@@ -37,14 +37,16 @@ class Controller_Anime_Ajax extends Controller
 	/**
 	 * Return anime information.
 	 * @param  int   anime ID
-	 * @return json  anime information
+	 * @return json  anime information, empty array if not found
 	 **/
 	public function action_anime($id=0)
 	{
 		$id = intval($id);
-		if( $id > 0 )
-		{
-			echo json_encode(Anime::getAnime($id));
+		$anime = Model_Anime_List::find($id);
+		if($anime !== null){
+			return json_encode($anime->to_array());
+		}else{
+			return json_encode(array());
 		}
 	}
 
