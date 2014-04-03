@@ -165,21 +165,26 @@ class Controller_Anime_Ajax extends Controller
 
    public function action_delete($id=0) {
       $id = intval($id);
-      if($id > 0 ){
-         $affected = Anime::deleteAnime($id);
-         if( $affected == 1 )
-         {
-            echo json_encode(array('stat'=>'ok'));
-         }
-         else
-         {
-            echo json_encode(array('stat'=>'error'));
-         }
-      }
-      else
-      {
-         echo json_encode(array('stat'=>'error'));
-      }
+		$user = $this->getUserInfo();
+		$anime = Model_Anime_List::find($id);
+
+		// find item
+		if($anime === null){
+			return json_encode(array('stat' => 'error'));
+		}
+
+		// Can only delete self's list
+		if($anime->user_id !== Sentry::user()->get('id')){
+			return json_encode(array('stat' => 'error'));
+		}
+
+		// delete it
+		try{
+			$anime->delete();
+			return json_encode(array('stat'=>'ok'));
+		}catch(Exception $e){
+			return json_encode(array('stat' => 'error'));
+		}
    }
 
 	/**
