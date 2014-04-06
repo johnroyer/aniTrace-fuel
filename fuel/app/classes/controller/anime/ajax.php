@@ -151,18 +151,19 @@ class Controller_Anime_Ajax extends Controller
 		$validate = Validation::forge();
 		$validate->add_field('name', 'anime name', 'required');
 		$validate->add_field('link', 'external link', 'max_length[10240]');
-		if( $validate->run() )
-		{
-			$data = array(
-				'name' => Input::post('name'),
-				'sub' => Input::post('sub', ''),
-				'link' => Input::post('link', '')
-			);
-			$newAnime = Anime::addAnime($data);
-			echo json_encode($newAnime);
-		}
-		else
-		{
+		if( $validate->run() ){
+			$anime = new Model_Anime_List();
+			$anime->user_id = Sentry::user()->get('id');
+			$anime->name = Input::post('name');
+			$anime->sub = Input::post('sub', '');
+			$anime->volumn = Input::post('volumn', 0);
+			$anime->download = Input::post('download', 0);
+			$anime->link = Input::post('link', '');
+			$anime->finished = Input::post('finished', 0);
+			$anime->public = Input::post('public', 0);
+			$anime->save();
+			return json_encode($anime->to_array());
+		}else{
 			echo json_encode(array('stat'=>'input error'));
 		}
 	}
