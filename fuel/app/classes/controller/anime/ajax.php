@@ -59,18 +59,27 @@ class Controller_Anime_Ajax extends Controller
 	public function action_vol($action, $id=0)
 	{
 		$id = intval($id);
-		if( $id > 0 )
-		{
-			if( $action == 'up' )
-			{
-				Anime::volumnUp($id);
-				echo json_encode(Anime::getAnime($id));
-			}
-			else
-			{
-				Anime::volumnDown($id);
-				echo json_encode(Anime::getAnime($id));
-			}
+		$anime = Model_Anime_List::find($id);
+
+		if($anime === null){
+			$stat = json_encode(array('stat' => 'item not found'));
+			return new Response($stat, 404);  // not found
+		}
+
+		// Can only delete self's list
+		if($anime->user_id !== Sentry::user()->get('id')){
+			$stat = json_encode(array('stat' => 'access denied'));
+			return new Response($stat, 406);  // not accessable
+		}
+
+		if($action == 'up'){
+			$anime->volumn++;
+			$anime->save();
+			return json_encode(Anime::getAnime($id));
+		}else{
+			$anime->volumn--;
+			$anime->save();
+			return json_encode(Anime::getAnime($id));
 		}
 	}
 
