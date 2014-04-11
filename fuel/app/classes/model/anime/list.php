@@ -16,7 +16,7 @@ class Model_Anime_List extends \Orm\Model
 		'volumn' => array(
 			'default' => 0,
 		),
-		'download', => array(
+		'download' => array(
 			'default' => 0,
 		),
 		'link' => array(
