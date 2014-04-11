@@ -174,23 +174,26 @@ class Controller_Anime_Ajax extends Controller
 	 **/
 	public function action_mod()
 	{
-		$id = intval(Input::post('id', 0));
-		$data = array(
-				'id' => $id,
-				'name' => Input::post('name', ''),
-				'sub' => Input::post('sub', ''),
-				'volumn' => intval(Input::post('vol', 0)),
-				'download' => intval(Input::post('buy', 0)),
-				'link' => Input::post('link', ''),
-				);
-		if( $id > 0 && $data['name'] != '' )
-		{
-			echo json_encode(Anime::setAnime($data));
-		}
-		else
-		{
-			echo json_encode(array('stat'=>'failed'));
-		}
+      $id = intval(Input::post('id', 0));
+      $anime = Model_Anime_List::find($id);
+
+      if($anime === null){
+         $stat = json_encode(array('stat' => 'item not found'));
+         return new Response($stat, 404);  // not found
+      }
+
+      // Can only delete self's list
+      if($anime->user_id !== Sentry::user()->get('id')){
+         $stat = json_encode(array('stat' => 'access denied'));
+         return new Response($stat, 406);  // not accessable
+      }
+
+      $anime->name = Input::post('name', '');
+      $anime->sub = Input::post('sub', '');
+      $anime->volumn = intval(Input::post('vol', 0));
+      $anime->download = intval(Input::post('download', 0));
+      $anime->link = Input::post('link', '');
+      $anime->save();
 	}
 
    public function action_delete($id=0) {
