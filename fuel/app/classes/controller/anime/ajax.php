@@ -156,11 +156,11 @@ class Controller_Anime_Ajax extends Controller
 			$anime->user_id = Sentry::user()->get('id');
 			$anime->name = Input::post('name');
 			$anime->sub = Input::post('sub', '');
-			$anime->volumn = Input::post('volumn', 0);
-			$anime->download = Input::post('download', 0);
-			$anime->link = Input::post('link', '');
-			$anime->finished = Input::post('finished', 0);
-			$anime->public = Input::post('public', 0);
+			//$anime->volumn = Input::post('volumn', 0);
+			//$anime->download = Input::post('download', 0);
+			//$anime->link = Input::post('link', '');
+			//$anime->finished = Input::post('finished', 0);
+			//$anime->public = Input::post('public', 0);
 			$anime->save();
 			return json_encode($anime->to_array());
 		}else{
