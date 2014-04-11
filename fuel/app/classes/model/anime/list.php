@@ -4,14 +4,30 @@ class Model_Anime_List extends \Orm\Model
 {
 	protected static $_properties = array(
 		'id',
-		'user_id',
-		'name',
-		'sub',
-		'volumn',
-		'download',
-		'link',
-		'finished',
-		'public',
+		'user_id' => array(
+			'validation' => array('required'),
+		),
+		'name' => array(
+			'default' => '',
+		),
+		'sub' => array(
+			'default' => '',
+		),
+		'volumn' => array(
+			'default' => 0,
+		),
+		'download', => array(
+			'default' => 0,
+		),
+		'link' => array(
+			'default' => '',
+		),
+		'finished' => array(
+			'default' => 0,
+		),
+		'public' => array(
+			'default' => 0,
+		),
 		'updated',
 	);
 
