@@ -43,11 +43,11 @@ class Controller_Anime_Ajax extends Controller
 	{
 		$id = intval($id);
 		$anime = Model_Anime_List::find($id);
-		if($anime !== null){
-			return json_encode($anime->to_array());
-		}else{
-			return json_encode(array());
-		}
+
+      if($anime == null){
+			return new Response($stat, 404);  // not found
+      }
+      return json_encode($anime->to_array());
 	}
 
 	/**
