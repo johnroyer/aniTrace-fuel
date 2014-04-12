@@ -140,6 +140,7 @@ class Controller_Anime_Ajax extends Controller
 		// swap between 0 and 1
 		$anime->finished = ($anime->finished + 1) % 2;
 		$anime->save();
+      return json_encode(Anime::getAnime($id));
 	}
 
 	/**
