@@ -116,32 +116,32 @@ class Controller_Anime_Ajax extends Controller
 		}
 	}
 
-	/**
-	 * Set if anime has finished.
-	 * @param  int   anime ID
-	 * @return jsosn anime information
-	 **/
-	public function action_finished($id=0)
-	{
-		$id = intval($id);
-		$anime = Model_Anime_List::find($id);
+   /**
+    * Set if anime has finished.
+    * @param  int   anime ID
+    * @return jsosn anime information
+    **/
+   public function action_finished($id=0)
+   {
+      $id = intval($id);
+      $anime = Model_Anime_List::find($id);
 
-		if($anime === null){
-			$stat = json_encode(array('stat' => 'item not found'));
-			return new Response($stat, 404);  // not found
-		}
+      if($anime === null){
+         $stat = json_encode(array('stat' => 'item not found'));
+         return new Response($stat, 404);  // not found
+      }
 
-		// Can only delete self's list
-		if($anime->user_id !== Sentry::user()->get('id')){
-			$stat = json_encode(array('stat' => 'access denied'));
-			return new Response($stat, 406);  // not accessable
-		}
+      // Can only delete self's list
+      if($anime->user_id !== Sentry::user()->get('id')){
+         $stat = json_encode(array('stat' => 'access denied'));
+         return new Response($stat, 406);  // not accessable
+      }
 
-		// swap between 0 and 1
-		$anime->finished = ($anime->finished + 1) % 2;
-		$anime->save();
+      // swap between 0 and 1
+      $anime->finished = ($anime->finished + 1) % 2;
+      $anime->save();
       return json_encode(Anime::getAnime($id));
-	}
+   }
 
 	/**
 	 * Add a new anime.
