@@ -195,6 +195,7 @@ class Controller_Anime_Ajax extends Controller
       $anime->download = intval(Input::post('download', 0));
       $anime->link = Input::post('link', '');
       $anime->save();
+      return json_encode($anime->to_array());
 	}
 
    public function action_delete($id=0) {
