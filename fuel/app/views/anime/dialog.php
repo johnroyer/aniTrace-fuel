@@ -5,7 +5,7 @@
          <div class="control-group">
             <label class="control-label" for="name">動畫名稱</label>
             <div class="controls">
-               <input type="text" name="name" value="">
+               <input type="text" name="name" value="" autofocus>
             </div>
          </div>
 
@@ -38,7 +38,7 @@
          <div class="control-group">
             <label class="control-label" for="name">動畫名稱</label>
             <div class="controls">
-               <input type="text" id="ani-name" name="name" value="">
+               <input type="text" id="ani-name" name="name" value="" autofocus>
             </div>
          </div>
 
