@@ -192,7 +192,7 @@ class Controller_Anime_Ajax extends Controller
       $anime->name = Input::post('name', '');
       $anime->sub = Input::post('sub', '');
       $anime->volumn = intval(Input::post('vol', 0));
-      $anime->download = intval(Input::post('download', 0));
+      $anime->download = intval(Input::post('buy', 0));
       $anime->link = Input::post('link', '');
       $anime->save();
       return json_encode($anime->to_array());
