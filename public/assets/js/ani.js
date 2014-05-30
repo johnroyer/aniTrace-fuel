@@ -6,7 +6,7 @@
 
 function getAniList( ) {
    $.ajax( {
-      url: site_url + 'anime/ajax/',
+      url: site_url + 'tracker/ajax/',
       dataType: 'json',
       error: function(){ console.log('Get animation list failed') },
       success: function( response ){
@@ -29,7 +29,7 @@ function getAniList( ) {
 
 function getWatchableList( ) {
    $.ajax( {
-      url: site_url + 'anime/ajax/watchableList/',
+      url: site_url + 'tracker/ajax/watchableList/',
       dataType: 'json',
       error: function(){ console.log('Get animation list failed') },
       success: function( response ){
@@ -77,7 +77,7 @@ function renewList( response ){
 
 function req( data ) {
    if( data !== undefined ){
-      var url = site_url + 'anime/ajax/';
+      var url = site_url + 'tracker/ajax/';
       $.ajax( {
          url:  url + data.path,
          dataType: 'json',
@@ -89,7 +89,7 @@ function req( data ) {
 
 function markFinished( $clicked ){
    var id = $clicked.parent().parent().attr('id');
-   $.get( site_url + 'anime/ajax/finished/' + id ,
+   $.get( site_url + 'tracker/ajax/finished/' + id ,
       function( response ){
          if( response.finished == 1 ){
             $('tr#' + response.id).find('i.icon-ok').addClass('finished');
@@ -185,7 +185,7 @@ $('#dialog-edit').on('show', function(){
       var aniId = $this.find('> form').attr('data-id');
       var name, link, sub, vol, buy;
       var data = {
-         path: 'anime/' + aniId,
+         path: 'tracker/' + aniId,
          errorMsg: 'vol access failed',
          onSuccess: function( response ){
             name = response.name;
@@ -207,7 +207,7 @@ $('#dialog-edit').on('show', function(){
 // Bind click event to submit button in dialog
 $('#submit-new-animation').click( function(){
       console.log('form submit');
-      $.post( site_url+'anime/ajax/add/', $('form.active').serializeArray() ,
+      $.post( site_url+'tracker/ajax/add/', $('form.active').serializeArray() ,
          function( response ){ 
             // Add Animation into list
             var tmpl = $('#row-template').clone().removeAttr('id');
@@ -244,7 +244,7 @@ $('#submit-animation-change').click( function(){
    console.log('submiting changes');
    var data = $('form.active').serializeArray();
    data.push( {name:'id', value: $('form.active').attr('data-id') } );
-   $.post( site_url+'anime/ajax/mod/', data , function( response ){
+   $.post( site_url+'tracker/ajax/mod/', data , function( response ){
       // Update view
       var id = response.id;
       var $row = $('tr#' + id );
@@ -273,7 +273,7 @@ $('#submit-animation-change').click( function(){
 function deleteAnime( $clicked ){
    var id = $clicked.parent().parent().attr('id');
    console.log('delete anime = ' + id);
-   $.get( site_url + 'anime/ajax/delete/' + id ,
+   $.get( site_url + 'tracker/ajax/delete/' + id ,
       function( response ){
          if( response.stat == 'ok' ){
             // Delete row
