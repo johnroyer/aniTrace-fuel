@@ -20,7 +20,7 @@ class Controller_Tracker extends Controller
 	 **/
 	public function action_index()
 	{
-		$view = View::forge('anime/watchable');
+		$view = View::forge('tracker/watchable');
 		$data = array(
 			'page_title' => '動漫清單',
 			'loggedin' => true,
@@ -35,7 +35,7 @@ class Controller_Tracker extends Controller
 	 **/
 	public function action_download()
 	{
-		$view = View::forge('anime/download');
+		$view = View::forge('tracker/download');
 		$data = array(
 			'page_title' => '動漫清單',
 			'loggedin' => true,

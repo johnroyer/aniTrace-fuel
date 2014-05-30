@@ -40,7 +40,7 @@
       </tbody>
    </table>
 
-   <?php echo View::forge('anime/dialog'); ?>
+   <?php echo View::forge('tracker/dialog'); ?>
 
    <script type="text/javascript" charset="utf-8">
       var navbarHighlight = 'watchable-list';
