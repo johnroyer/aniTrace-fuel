@@ -12,7 +12,7 @@ class Controller_Auth extends Controller
 		// Check if user has logged in
 		if( Sentry::check() )
 		{
-			Response::redirect(Uri::create('anime/'));
+			Response::redirect(Uri::create('tracker/'));
 		}
 
 		$view = View::forge('auth/home');
@@ -34,7 +34,7 @@ class Controller_Auth extends Controller
 		// Check if user has logged in
 		if( Sentry::check() )
 		{
-			Response::redirect(Uri::create('anime/'));
+			Response::redirect(Uri::create('tracker/'));
 		}
 
 		$username = Input::post('username');
@@ -46,7 +46,7 @@ class Controller_Auth extends Controller
 				$valid = Sentry::login($username, $password, $remember);
 				if( $valid )
 				{
-					Response::redirect( Uri::create('anime/') );
+					Response::redirect( Uri::create('tracker/') );
 				}
 				else
 				{
@@ -110,7 +110,7 @@ class Controller_Auth extends Controller
 		// Check if user has logged in
 		if( Sentry::check() )
 		{
-			Response::redirect(Uri::create('anime/'));
+			Response::redirect(Uri::create('tracker/'));
 		}
 
 		$username = Input::post('username');
@@ -138,7 +138,7 @@ class Controller_Auth extends Controller
 							'type' => 'success',
 							'title' => '歡迎',
 							'text' => '註冊成功，祝您使用愉快！',
-							'next' => Uri::create('anime/'),
+							'next' => Uri::create('tracker/'),
 							'next_hint' => '追蹤新的動畫',
 						);
 						$view = View::forge('dialog');

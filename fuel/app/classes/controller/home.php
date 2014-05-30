@@ -9,7 +9,7 @@ class Controller_Home extends Controller
 	{
 		if( Sentry::check() )
 		{
-			Response::redirect(Uri::create('anime/'));
+			Response::redirect(Uri::create('tracker/'));
 		}
 	}
 
