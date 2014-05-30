@@ -5,7 +5,7 @@ use \Model\Anime_List;
 /**
  * Methods for Ajax request in animtion page.
  **/
-class Controller_Anime_Ajax extends Controller
+class Controller_Tracker_Ajax extends Controller
 {
    /**
     * Construtor for Anime
