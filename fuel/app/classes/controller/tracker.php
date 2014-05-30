@@ -2,7 +2,7 @@
 /**
  * Methods for anime.
  **/
-class Controller_Anime extends Controller
+class Controller_Tracker extends Controller
 {
 	/**
 	 * Construtor for Anime
