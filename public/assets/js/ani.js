@@ -185,7 +185,7 @@ $('#dialog-edit').on('show', function(){
       var aniId = $this.find('> form').attr('data-id');
       var name, link, sub, vol, buy;
       var data = {
-         path: 'tracker/' + aniId,
+         path: 'anime/' + aniId,
          errorMsg: 'vol access failed',
          onSuccess: function( response ){
             name = response.name;
