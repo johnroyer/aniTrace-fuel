@@ -11,10 +11,10 @@
             <?php endif; ?>
 
 					<li id="watchable-list" class="">
-						<a href="<?php echo uri::create('anime/'); ?>"><i class="icon-list-ul"></i>動畫清單</a>
+						<a href="<?php echo uri::create('tracker/'); ?>"><i class="icon-list-ul"></i>動畫清單</a>
 					</li>
 					<li id="download-list" class="">
-						<a href="<?php echo Uri::create('anime/download/'); ?>"><i class="icon-download-alt"></i>下載清單</a>
+						<a href="<?php echo Uri::create('tracker/download/'); ?>"><i class="icon-download-alt"></i>下載清單</a>
 					</li>
 
                <li class="dropdown">
