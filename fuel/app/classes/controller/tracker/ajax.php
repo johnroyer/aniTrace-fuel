@@ -19,7 +19,7 @@ class Controller_Tracker_Ajax extends Controller
    }
 
    /**
-    * Default method. Return all availible animes which is not finished user.
+    * Default method. Return all availible animes which is not finished.
     **/
    public function action_index()
    {
