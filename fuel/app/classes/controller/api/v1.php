@@ -1,7 +1,7 @@
 <?php
 
-class Controller_Api_V1 extends Controller_Rest {
+class Controller_Api_V1 extends ApiJson {
    public function get_track(){
-      echo '123';
+      return array('hello' => 'world');
    }
 }
