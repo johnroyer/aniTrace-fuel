@@ -43,6 +43,6 @@ class Model_Track extends \Orm\Model
          'property' => 'updated',
       ),
    );
-   protected static $_table_name = 'anime_lists';
+   protected static $_table_name = 'tracks';
 
 }
