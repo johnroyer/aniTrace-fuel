@@ -1,6 +1,6 @@
 <?php
 
-class Model_Anime_List extends \Orm\Model
+class Model_Track extends \Orm\Model
 {
    protected static $_properties = array(
       'id',
