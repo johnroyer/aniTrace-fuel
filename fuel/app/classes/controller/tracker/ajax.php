@@ -1,6 +1,6 @@
 <?php
 use \Model\Anime;
-use \Model\Anime_List;
+use \Model\Track;
 
 /**
  * Methods for Ajax request in animtion page.
@@ -42,7 +42,7 @@ class Controller_Tracker_Ajax extends Controller
    public function action_anime($id=0)
    {
       $id = intval($id);
-      $anime = Model_Anime_List::find($id);
+      $anime = Model_Track::find($id);
 
       if($anime == null){
          return new Response($stat, 404);  // not found
@@ -59,7 +59,7 @@ class Controller_Tracker_Ajax extends Controller
    public function action_vol($action, $id=0)
    {
       $id = intval($id);
-      $anime = Model_Anime_List::find($id);
+      $anime = Model_Track::find($id);
 
       if($anime === null){
          $stat = json_encode(array('stat' => 'item not found'));
@@ -92,7 +92,7 @@ class Controller_Tracker_Ajax extends Controller
    public function action_download($action, $id=0)
    {
       $id = intval($id);
-      $anime = Model_Anime_List::find($id);
+      $anime = Model_Track::find($id);
 
       if($anime === null){
          $stat = json_encode(array('stat' => 'item not found'));
@@ -124,7 +124,7 @@ class Controller_Tracker_Ajax extends Controller
    public function action_finished($id=0)
    {
       $id = intval($id);
-      $anime = Model_Anime_List::find($id);
+      $anime = Model_Track::find($id);
 
       if($anime === null){
          $stat = json_encode(array('stat' => 'item not found'));
@@ -153,7 +153,7 @@ class Controller_Tracker_Ajax extends Controller
       $validate->add_field('name', 'anime name', 'required');
       $validate->add_field('link', 'external link', 'max_length[10240]');
       if( $validate->run() ){
-         $anime = new Model_Anime_List();
+         $anime = new Model_Track();
          $anime->user_id = Sentry::user()->get('id');
          $anime->name = Input::post('name');
          $anime->sub = Input::post('sub', '');
@@ -171,7 +171,7 @@ class Controller_Tracker_Ajax extends Controller
    public function action_mod()
    {
       $id = intval(Input::post('id', 0));
-      $anime = Model_Anime_List::find($id);
+      $anime = Model_Track::find($id);
 
       if($anime === null){
          $stat = json_encode(array('stat' => 'item not found'));
@@ -196,7 +196,7 @@ class Controller_Tracker_Ajax extends Controller
    public function action_delete($id=0) {
       $id = intval($id);
       $user = $this->getUserInfo();
-      $anime = Model_Anime_List::find($id);
+      $anime = Model_Track::find($id);
 
       // find item
       if($anime === null){

@@ -20,7 +20,7 @@ class Anime extends \Model
 		if( $type == '' )
 		{
 			return DB::select()
-				->from('anime_lists')
+				->from('tracks')
 				->where('user_id', Sentry::user()->get('id'))
 				->order_by('id', 'asc')
 				->execute()->as_array();
@@ -28,7 +28,7 @@ class Anime extends \Model
 		elseif( $type == 'download' )
 		{
 			return DB::select()
-				->from('anime_lists')
+				->from('tracks')
 				->where('user_id', Sentry::user()->get('id'))
 				->and_where('finished', 0)
 				->order_by('id', 'asc')
@@ -36,7 +36,7 @@ class Anime extends \Model
 		}
 		elseif( $type == 'watchable' )
 		{
-			$sql  = 'select * from anime_lists
+			$sql  = 'select * from tracks
 				where user_id = ' . Sentry::user()->get('id') .'
 				and (
 						(`download` = 0 and `volumn` = 0)
@@ -57,7 +57,7 @@ class Anime extends \Model
 		if( $id != 0 )
 		{
 			$result = DB::select()
-				->from('anime_lists')
+				->from('tracks')
 				->where('user_id', Sentry::user()->get('id'))
 				->where('id', $id)
 				->execute()->as_array();
@@ -115,7 +115,7 @@ class Anime extends \Model
 			}
 			Arr::delete($data, 'id');
 			Arr::delete($data, 'user_id');
-			$result = DB::update('anime_lists')
+			$result = DB::update('tracks')
 				->where('id', $id)
 				->where('user_id', Sentry::user()->get('id'))
 				->set( $data )
@@ -132,7 +132,7 @@ class Anime extends \Model
 	{
 		$vol = Anime::getVolumn($id);
 		$vol++;
-		DB::update('anime_lists')
+		DB::update('tracks')
 			->where('id', $id)
 			->where('user_id', Sentry::user()->get('id'))
 			->value('volumn', $vol)
@@ -149,7 +149,7 @@ class Anime extends \Model
 		if( $vol > 0 )
 		{
 			$vol--;
-			DB::update('anime_lists')
+			DB::update('tracks')
 				->where('id', $id)
 				->where('user_id', Sentry::user()->get('id'))
 				->value('volumn', $vol)
@@ -165,7 +165,7 @@ class Anime extends \Model
 	{
 		$download = Anime::getDownload($id);
 		$download++;
-		DB::update('anime_lists')
+		DB::update('tracks')
 			->where('id', $id)
 			->where('user_id', Sentry::user()->get('id'))
 			->value('download', $download)
@@ -182,7 +182,7 @@ class Anime extends \Model
 		if( $download > 0 )
 		{
 			$download--;
-			DB::update('anime_lists')
+			DB::update('tracks')
 				->where('id', $id)
 				->where('user_id', Sentry::user()->get('id'))
 				->value('download', $download)
@@ -200,7 +200,7 @@ class Anime extends \Model
 		$anime = Anime::getAnime($id);
 		$finished = $anime['finished'];
 		$finished = ( $finished + 1 ) % 2;  // Swap between 0 and 1
-		DB::update('anime_lists')
+		DB::update('tracks')
 			->where('id', $id)
 			->where('user_id', Sentry::user()->get('id'))
 			->value('finished', $finished)
@@ -227,7 +227,7 @@ class Anime extends \Model
 				$data['finished'] = Arr::get($data, 'finished', '0');
 				$data['public'] = Arr::get($data, 'public', '0');
 
-				list($id, $affectedRow) = DB::insert('anime_lists')
+				list($id, $affectedRow) = DB::insert('tracks')
 					->set($data)
 					->execute();
 				return Anime::getAnime($id);
@@ -238,7 +238,7 @@ class Anime extends \Model
    public static function deleteAnime($id){
       if($id > 0)
       {
-         $affected = DB::delete('anime_lists')
+         $affected = DB::delete('tracks')
 				->where('user_id', Sentry::user()->get('id'))
 				->and_where('id', $id)
             ->execute();
