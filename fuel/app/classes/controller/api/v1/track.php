@@ -6,7 +6,7 @@ use \Model\Track;
 class Controller_Api_V1_Track extends ApiJson {
    public function get_track($id, $tmp = null){
       if($id == 'all'){
-      return $this->response(Anime::getList('watchable'));
+         return $this->response(Anime::getList('watchable'));
       }else{
          $id = intval($id);
          $anime = Model_Track::find($id);
