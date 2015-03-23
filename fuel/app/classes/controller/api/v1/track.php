@@ -18,4 +18,10 @@ class Controller_Api_V1_Track extends ApiJson {
          }
       }
    }
+
+   public function put_track($id){
+   }
+
+   public function post_track($id){
+   }
 }
