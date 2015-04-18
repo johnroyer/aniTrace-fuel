@@ -54,6 +54,13 @@ class Controller_Admin extends Controller
 			$data['tab_general'] = 'active';
 			$data['tab_admin'] = '';
 		}
+
+		// get user last login
+		foreach($data['users'] as &$user)
+		{
+			$user['last_login'] = date('Y/m/d', $user['last_login']);
+		}
+
 		$view->set_global($data);
 		return $view;
 	}
