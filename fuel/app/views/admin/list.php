@@ -44,7 +44,7 @@
             <?php foreach($users as $u): ?>
                <tr>
                   <td><?php echo $u['id']; ?></td>
-                  <td><?php echo $u['username']; ?></td>
+                  <td><?php echo $u['username']; ?> <span class="admin-user-last-login">(<?=$u['last_login'];?>)</span></td>
                   <td><?php echo $u['email']; ?></td>
                   <td>
                      <a href="<?php echo Uri::create('admin/deleteUser/' . $u['id']); ?>" class="action-link"><i class="icon-trash action-icon"></i> 刪除</a>
