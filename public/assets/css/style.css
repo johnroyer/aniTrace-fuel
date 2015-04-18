@@ -21,6 +21,11 @@ body {
    margin-right: 6px;
 }
 
+.admin-user-last-login {
+    font-size: 0.8em;
+    color: lightslategray;
+}
+
 #row-template {
    display: none;
 }
