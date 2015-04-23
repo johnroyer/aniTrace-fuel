@@ -29,6 +29,9 @@ class Model_Track extends \Orm\Model
          'default' => 0,
       ),
       'updated',
+      'delete_at' => array(
+        'default' => null,
+      ),
    );
 
    protected static $_observers = array(
