@@ -1,7 +1,11 @@
 <?php
 
-class Model_Track extends \Orm\Model
+class Model_Track extends \Orm\Model_Soft
 {
+   protected static $_soft_delete = array(
+      'deleted_field' => 'delete_at',
+   );
+
    protected static $_properties = array(
       'id',
       'user_id' => array(
