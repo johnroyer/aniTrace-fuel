@@ -28,7 +28,7 @@ class Model_Track extends \Orm\Model
       'public' => array(
          'default' => 0,
       ),
-      'updated',
+      'update_at',
       'delete_at' => array(
         'default' => null,
       ),
@@ -38,12 +38,12 @@ class Model_Track extends \Orm\Model
       'Orm\Observer_CreatedAt' => array(
          'events' => array('before_insert'),
          'mysql_timestamp' => false,
-         'property' => 'updated',
+         'property' => 'update_at',
       ),
       'Orm\Observer_UpdatedAt' => array(
          'events' => array('before_update'),
          'mysql_timestamp' => false,
-         'property' => 'updated',
+         'property' => 'update_at',
       ),
    );
    protected static $_table_name = 'tracks';
