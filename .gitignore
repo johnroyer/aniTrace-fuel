@@ -14,6 +14,7 @@ nbproject/
 .idea
 *.swp
 composer.lock
+composer.phar
 
 /fuel/app/config/crypt.php
 /fuel/vendor
