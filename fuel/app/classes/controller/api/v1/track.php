@@ -4,7 +4,7 @@ use \Model\Anime;
 use \Model\Track;
 
 class Controller_Api_V1_Track extends ApiJson {
-   public function get_track($id, $tmp = null){
+   public function get_track($id){
       if($id == 'all'){
          return $this->response(Anime::getList('watchable'));
       }else{
