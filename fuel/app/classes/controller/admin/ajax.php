@@ -9,7 +9,7 @@ class Controller_Admin_Ajax extends Controller
      * @param  string  keyword to Search
      * @return json    search result in json
      **/
-    public function action_searchUser($key='')
+    public function action_searchUser($key = '')
     {
         return 'search';
     }

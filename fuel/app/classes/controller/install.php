@@ -1,16 +1,13 @@
 <?php
 
-class Controller_Install extends Controller
+class controller_install extends Controller
 {
 
     public function action_index()
     {
-        if( Migrate::latest('sentry', 'package') && Migrate::latest('default', 'app'))
-        {
+        if (Migrate::latest('sentry', 'package') && Migrate::latest('default', 'app')) {
             return 'install complete';
-        }
-        else
-        {
+        } else {
             return 'migrate failed';
         }
     }

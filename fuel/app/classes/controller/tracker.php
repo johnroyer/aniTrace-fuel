@@ -2,15 +2,14 @@
 /**
  * Methods for anime.
  **/
-class Controller_Tracker extends Controller
+class controller_tracker extends Controller
 {
     /**
      * Construtor for Anime
      **/
     public function before()
     {
-        if(!Sentry::check())
-        {
+        if (!Sentry::check()) {
             Response::redirect(Uri::create('auth/'));
         }
     }

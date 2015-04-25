@@ -9,14 +9,10 @@ class Controller_Admin extends Controller
      **/
     public function before()
     {
-        if(!Sentry::check())
-        {
+        if (!Sentry::check()) {
             Response::redirect(Uri::create('auth/'));
-        }
-        else
-        {
-            if(!Sentry::user()->in_group('admin'))
-            {
+        } else {
+            if (!Sentry::user()->in_group('admin')) {
                 Response::redirect(Uri::create('anime/'));
             }
         }
@@ -34,7 +30,7 @@ class Controller_Admin extends Controller
      * List users.
      * @param string 'admin' for admin, empty for general list
      **/
-    public function action_userList($type='')
+    public function action_userList($type = '')
     {
         $view = View::forge('admin/list');
         $data = array(
@@ -42,22 +38,18 @@ class Controller_Admin extends Controller
             'loggedin' => true,
             'user' => $this->getUserInfo(),
         );
-        if( $type == 'admin' )
-        {
+        if ($type == 'admin') {
             $data['users'] = Sentry::group('admin')->users();
             $data['tab_general'] = '';
             $data['tab_admin'] = 'active';
-        }
-        else
-        {
+        } else {
             $data['users'] = Sentry::user()->all();
             $data['tab_general'] = 'active';
             $data['tab_admin'] = '';
         }
 
         // get user last login
-        foreach($data['users'] as &$user)
-        {
+        foreach ($data['users'] as &$user) {
             $user['last_login'] = date('Y/m/d', $user['last_login']);
         }
 
@@ -70,17 +62,13 @@ class Controller_Admin extends Controller
      * @param  int    user ID
      * @param  string 'confirmed' if confirm to delete
      **/
-    public function action_deleteUser($id=-1, $confirm='')
+    public function action_deleteUser($id = -1, $confirm = '')
     {
-        if( $id == -1 )
-        {
+        if ($id == -1) {
             Response::redirect(Uri::create('admin/userList'));
-        }
-        else
-        {
+        } else {
             // Check if ID is himself
-            if( $id == Sentry::user()->get('id') )
-            {
+            if ($id == Sentry::user()->get('id')) {
                 // Can not delete himself
                 $data = array(
                     'page_title' => '刪除帳號',
@@ -97,11 +85,8 @@ class Controller_Admin extends Controller
                 $view = View::forge('dialog');
                 $view->set_global($data);
                 return $view;
-            }
-            else
-            {
-                if( $confirm == 'confirmed' )
-                {
+            } else {
+                if ($confirm == 'confirmed') {
                     // Delete user data
                     $result = DB::delete('anime_list')
                         ->where('user_id', $id);
@@ -124,9 +109,7 @@ class Controller_Admin extends Controller
                     $view = View::forge('dialog');
                     $view->set_global($data);
                     return $view;
-                }
-                else
-                {
+                } else {
                     // Show confirm dialog
                     $view = View::forge('admin/delete_confirm');
                     $user = Sentry::user(intval($id));
