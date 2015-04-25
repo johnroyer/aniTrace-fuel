@@ -16,5 +16,6 @@ nbproject/
 composer.lock
 
 /fuel/app/config/crypt.php
+/fuel/vendor
 
 .htaccess
