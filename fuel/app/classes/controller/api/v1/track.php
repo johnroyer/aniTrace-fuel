@@ -41,4 +41,13 @@ class controller_api_v1_track extends ApiJson
     public function post_track()
     {
     }
+
+    /**
+     * Delete a track
+     *
+     * @param int $id track ID
+     */
+    public function delete_track($id)
+    {
+    }
 }
