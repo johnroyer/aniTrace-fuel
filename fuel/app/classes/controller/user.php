@@ -3,17 +3,16 @@
 /**
  * Methods depend on users. Such as login, register, etc.
  **/
-class Controller_User extends Controller 
+class controller_user extends Controller
 {
     /**
      * Check if user has loggedin.
      **/
     public function before()
     {
-        if ( !Sentry::check() )
-        {
+        if (!Sentry::check()) {
             // User is not loggedin
-            Response::redirect( Uri::create('auth/') );
+            Response::redirect(Uri::create('auth/'));
         }
     }
 
@@ -37,8 +36,7 @@ class Controller_User extends Controller
      **/
     public function action_chpassword()
     {
-        if( Input::post('password', '') == '' )
-        {
+        if (Input::post('password', '') == '') {
             $view = View::forge('user/chpassword');
             $data = array(
                 'page_title' => '修改密碼',
@@ -47,16 +45,11 @@ class Controller_User extends Controller
             );
             $view->set_global($data);
             return $view;
-        }
-        else
-        {
+        } else {
             // Validate password
-            if( Input::post('password', '') == Input::post('passwordConfirm', '') )
-            {
-                try
-                {
-                    if( Sentry::user()->change_password(Input::post('password', ''), Input::post('origPassword', '')) )
-                    {
+            if (Input::post('password', '') == Input::post('passwordConfirm', '')) {
+                try {
+                    if (Sentry::user()->change_password(Input::post('password', ''), Input::post('origPassword', ''))) {
                         // Success
                         $data = array(
                             'page_title' => '修改密碼',
@@ -73,9 +66,7 @@ class Controller_User extends Controller
                         $view = View::forge('dialog');
                         $view->set_global($data);
                         return $view;
-                    }
-                    else
-                    {
+                    } else {
                         // Failed
                         $data = array(
                             'page_title' => '修改密碼',
@@ -93,10 +84,8 @@ class Controller_User extends Controller
                         $view->set_global($data);
                         return $view;
                     }
-                }
-                catch( SentryUserException $e )
-                {
-                        $data = array(
+                } catch (SentryUserException $e) {
+                    $data = array(
                             'page_title' => '修改密碼',
                             'loggedin' => true,
                             'user' => $this->getUserInfo(),
@@ -108,13 +97,11 @@ class Controller_User extends Controller
                                 'next_hint' => '重試',
                             ),
                         );
-                        $view = View::forge('dialog');
-                        $view->set_global($data);
-                        return $view;
+                    $view = View::forge('dialog');
+                    $view->set_global($data);
+                    return $view;
                 }
-            }
-            else
-            {
+            } else {
                 // Password confirm error
                 $data = array(
                     'page_title' => '修改密碼',

@@ -1,14 +1,13 @@
 <?php
 
-class Controller_Home extends Controller
+class controller_home extends Controller
 {
     /**
      * Redirect if user loggedin.
      **/
     public function before()
     {
-        if( Sentry::check() )
-        {
+        if (Sentry::check()) {
             Response::redirect(Uri::create('tracker/'));
         }
     }
@@ -22,7 +21,7 @@ class Controller_Home extends Controller
             'page_title' => 'aniTrace',
             'loggedin' => false,
         );
-        $view->set_global( $data );
+        $view->set_global($data);
 
         return $view;
     }
