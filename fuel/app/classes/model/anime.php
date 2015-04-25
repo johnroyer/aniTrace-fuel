@@ -226,11 +226,10 @@ class anime extends \Model
     public static function deleteAnime($id)
     {
         if ($id > 0) {
-            $affected = DB::delete('tracks')
-                            ->where('user_id', Sentry::user()->get('id'))
-                            ->and_where('id', $id)
-                            ->execute();
-            return $affected;
+            return DB::delete('tracks')
+                       ->where('user_id', Sentry::user()->get('id'))
+                       ->and_where('id', $id)
+                       ->execute();
         }
     }
 }
