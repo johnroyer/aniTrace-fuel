@@ -13,6 +13,7 @@ class controller_api_v1_track extends ApiJson
     public function get_track($id)
     {
         if ($id == 'all') {
+            // TODO: do not use this model any more
             return $this->response(Anime::getList('watchable'));
         } else {
             $id = intval($id);
