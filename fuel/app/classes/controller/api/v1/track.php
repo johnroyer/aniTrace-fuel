@@ -20,9 +20,13 @@ class controller_api_v1_track extends ApiJson
 
             if ($anime === null) {
                 return $this->response('track not found', 404);
-            } else {
-                return $this->response($anime->to_array());
             }
+
+            if (Sentry::user()->get('id') !== $anime->user_id) {
+                return $this->response('permission denied', 403);
+            }
+
+            return $this->response($anime->to_array());
         }
     }
 
