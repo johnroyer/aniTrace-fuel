@@ -1,5 +1,4 @@
 <?php
-
 use \Model\Anime;
 use \Model\Track;
 
@@ -50,5 +49,22 @@ class controller_api_v1_track extends ApiJson
      */
     public function delete_track($id)
     {
+        $id = intval($id);
+        $anime = Model_Track::find($id);
+
+        if (null === $anime) {
+            return $this->response('track not found', 404);
+        }
+
+        if (Sentry::user()->get('id') !== $anime->id) {
+            return $this->response('permission denied', 403);
+        }
+
+        try {
+            $anime->delete();
+            return $this->response();
+        } catch (Exception $e) {
+            return $this->response('failed to delete track', 500);
+        }
     }
 }
