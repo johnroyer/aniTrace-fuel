@@ -1,6 +1,6 @@
 <?php
 
-abstract class apijson extends Controller_Rest
+abstract class JsonApiAuth extends Controller_Rest
 {
     // always use JSON as output format
     protected $format = 'json';
