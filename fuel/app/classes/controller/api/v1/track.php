@@ -4,6 +4,19 @@ use \Model\Track;
 
 class controller_api_v1_track extends ApiJson
 {
+	/**
+	 * Valid keys from POST data
+	 */
+	private $validField = array(
+		'name',
+		'sub',
+		'volumn',
+		'download',
+		'link',
+		'finished',
+		'public',
+	);
+
     /**
      * Get specific track
      *
