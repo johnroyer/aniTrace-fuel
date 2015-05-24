@@ -37,7 +37,7 @@ class controller_api_v1_track extends ApiJson
 		}
 
 		if (Sentry::user()->get('id') !== $anime->user_id) {
-			return $this->response('permission denied', 403);
+			return $this->response('track not found', 404);
 		}
 
 		return $this->response($anime->to_array());
@@ -74,7 +74,7 @@ class controller_api_v1_track extends ApiJson
         }
 
         if (Sentry::user()->get('id') !== $anime->id) {
-            return $this->response('permission denied', 403);
+            return $this->response('track not found', 404);
         }
 
         try {
