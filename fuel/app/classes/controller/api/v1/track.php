@@ -50,6 +50,27 @@ class controller_api_v1_track extends ApiJson
      */
     public function put_track($id)
     {
+		$id = intval($id);
+		$anime = Model_Track::find($id);
+
+		if ($anime === null) {
+			return $this->response('track not found', 404);
+		}
+
+		if (Sentry::user()->get('id') !== $anime->user_id) {
+			return $this->response('track not found', 404);
+		}
+
+		$anime->name = Input::('name', '');
+		$anime->sub = Input::('sub', '');
+		$anime->volumn = intval(Input::('volumn', 0));
+		$anime->download = intval(Input::('download', 0));
+		$anime->link = Input::('link', '');
+		$anime->finished = $this->getBoolInt(Input::put('finished'), 0);
+		$anime->public = $this->getBoolInt(Input::put('public'), 0);
+		$anime->save();
+
+		return $this->response();
     }
 
     /**
