@@ -78,6 +78,10 @@ body {
     color: #4AACFF;
 }
 
+.buy-act :hover {
+    color: #4AACFF;
+}
+
 .vol, .vol-act, .buy, .buy-act {
    float: left;
    margin-right: 8px;
