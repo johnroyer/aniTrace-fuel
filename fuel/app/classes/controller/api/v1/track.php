@@ -27,20 +27,20 @@ class controller_api_v1_track extends ApiJson
         if ($id == 'all') {
             // TODO: do not use this model any more
             return $this->response(Anime::getList('watchable'));
-        } else {
-            $id = intval($id);
-            $anime = Model_Track::find($id);
-
-            if ($anime === null) {
-                return $this->response('track not found', 404);
-            }
-
-            if (Sentry::user()->get('id') !== $anime->user_id) {
-                return $this->response('permission denied', 403);
-            }
-
-            return $this->response($anime->to_array());
         }
+
+		$id = intval($id);
+		$anime = Model_Track::find($id);
+
+		if ($anime === null) {
+			return $this->response('track not found', 404);
+		}
+
+		if (Sentry::user()->get('id') !== $anime->user_id) {
+			return $this->response('permission denied', 403);
+		}
+
+		return $this->response($anime->to_array());
     }
 
     /**
