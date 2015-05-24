@@ -84,4 +84,24 @@ class controller_api_v1_track extends ApiJson
             return $this->response('failed to delete track', 500);
         }
     }
+
+	/**
+	 * Return 0 or 1 value from input
+	 *
+	 * @param mixed $val input value
+	 * @param int $default default value to return if value can not be recognized
+	 * @return int 0 or 1
+	 */
+	private function getBoolInt($val, $default)
+	{
+		if (0 !== $default || 1 !== $default) {
+			return new Exception('default value is invalid');
+		}
+
+		$val = intval($val);
+		if (0 === $val || 1 === $val) {
+			return $val;
+		}
+		return $default;
+	}
 }
