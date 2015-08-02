@@ -22,6 +22,7 @@ class Anime extends \Model
 			return DB::select()
 				->from('tracks')
 				->where('user_id', Sentry::user()->get('id'))
+                ->and_where('delete_at', '=', null)
 				->order_by('id', 'asc')
 				->execute()->as_array();
 		}
@@ -30,6 +31,7 @@ class Anime extends \Model
 			return DB::select()
 				->from('tracks')
 				->where('user_id', Sentry::user()->get('id'))
+                ->and_where('delete_at', '=', null)
 				->and_where('finished', 0)
 				->order_by('id', 'asc')
 				->execute()->as_array();
@@ -42,6 +44,7 @@ class Anime extends \Model
 						(`download` = 0 and `volumn` = 0)
 						or (`download` > `volumn` or `finished` = 0)
 				) and download > 0 and download > volumn 
+                and delete_at is null
 				order by `id` asc ';
 			return DB::query($sql)->execute()->as_array();
 		}
