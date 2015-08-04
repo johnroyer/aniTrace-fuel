@@ -3,6 +3,7 @@ namespace Model;
 use DB;
 use Sentry;
 use Arr;
+use Model\Track;
 
 /**
  * Anime list access.
