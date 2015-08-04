@@ -25,7 +25,8 @@ class anime extends \Model
                 ->where('user_id', Sentry::user()->get('id'))
                 ->and_where('delete_at', '=', null)
                 ->order_by('id', 'asc')
-                ->execute()->as_array();
+                ->execute()
+					 ->as_array();
         } elseif ($type == 'download') {
             return DB::select()
                 ->from('tracks')
@@ -33,16 +34,17 @@ class anime extends \Model
                 ->and_where('delete_at', '=', null)
                 ->and_where('finished', 0)
                 ->order_by('id', 'asc')
-                ->execute()->as_array();
+                ->execute()
+					 ->as_array();
         } elseif ($type == 'watchable') {
             $sql  = 'select * from tracks
-				where user_id = ' . Sentry::user()->get('id') .'
-				and (
-						(`download` = 0 and `volumn` = 0)
-						or (`download` > `volumn` or `finished` = 0)
-				) and download > 0 and download > volumn 
-                and delete_at is null
-				order by `id` asc ';
+					where user_id = ' . Sentry::user()->get('id') .'
+					and (
+							(`download` = 0 and `volumn` = 0)
+							or (`download` > `volumn` or `finished` = 0)
+					) and download > 0 and download > volumn
+						 and delete_at is null
+					order by `id` asc ';
             return DB::query($sql)->execute()->as_array();
         }
     }
@@ -59,7 +61,8 @@ class anime extends \Model
                 ->from('tracks')
                 ->where('user_id', Sentry::user()->get('id'))
                 ->where('id', $id)
-                ->execute()->as_array();
+                ->execute()
+					 ->as_array();
             return $result[0];
         }
     }
@@ -233,7 +236,7 @@ class anime extends \Model
             $affected = DB::delete('tracks')
                 ->where('user_id', Sentry::user()->get('id'))
                 ->and_where('id', $id)
-            ->execute();
+					 ->execute();
             return $affected;
         }
     }
