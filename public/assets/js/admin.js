@@ -12,7 +12,7 @@ $('#username-key').keyup(  function(){
 
 function fetchUser( keyword ){
    $.ajax( {
-      url: site_url + '/admin/searchUser/' + encodeURIComponent( keyword ),
+      url: site_url + 'admin/searchUser/' + encodeURIComponent( keyword ),
       dataType: 'json',
       error: function(){ console.log('error'); },
       success: function(response){
