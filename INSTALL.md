@@ -1,8 +1,15 @@
+# Requirement
+
+- PHP >= 7.1
 
 # Web Site Settings
 
 Edit file in /fuel/app/config if needed.
 
+# Composer and packages
+
+    cd /path/to/project/root
+    composer install --prefer-dist
 
 # FuelPHP Environment Initialization
 

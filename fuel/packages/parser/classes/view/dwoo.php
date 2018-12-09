@@ -1,14 +1,12 @@
 <?php
 /**
- * Fuel
- *
- * Fuel is a fast, lightweight, community driven PHP5 framework.
+ * Fuel is a fast, lightweight, community driven PHP 5.4+ framework.
  *
  * @package    Fuel
- * @version    1.6
+ * @version    1.8.1
  * @author     Fuel Development Team
  * @license    MIT License
- * @copyright  2010 - 2013 Fuel Development Team
+ * @copyright  2010 - 2018 Fuel Development Team
  * @link       http://fuelphp.com
  */
 
@@ -31,7 +29,7 @@ class View_Dwoo extends \View
 
 		try
 		{
-			return static::parser()->get($file, $data);
+			$result = static::parser()->get($file, $data);
 		}
 		catch (\Exception $e)
 		{
@@ -39,6 +37,9 @@ class View_Dwoo extends \View
 			ob_end_clean();
 			throw $e;
 		}
+
+		$this->unsanitize($data);
+		return $result;
 	}
 
 	public $extension = 'tpl';

@@ -53,8 +53,8 @@ return array(
 	/**
 	 * Settings for the file finder cache (the Cache class has it's own config!)
 	 */
-	'caching'         => false,
-	'cache_lifetime'  => 3600, // In Seconds
+	// 'caching'         => false,
+	// 'cache_lifetime'  => 3600, // In Seconds
 
 	/**
 	 * Callback to use with ob_start(), set this to 'ob_gzhandler' for gzip encoding of output
@@ -87,7 +87,7 @@ return array(
 	 * server_gmt_offset	in seconds the server offset from gmt timestamp when time() is used
 	 * default_timezone		optional, if you want to change the server's default timezone
 	 */
-	'server_gmt_offset'  => 0,
+	'server_gmt_offset'  => 8,
 	'default_timezone'   => 'UTC',
 
 	/**
@@ -119,7 +119,7 @@ return array(
 		 * WARNING: Using xss_clean will cause a performance hit.
 		 * How much is dependant on how much input data there is.
 		 */
-		'input_filter'  => array(),
+		// 'input_filter'  => array(),
 
 		/**
 		 * This output filter can be any normal PHP function as well as 'xss_clean'
